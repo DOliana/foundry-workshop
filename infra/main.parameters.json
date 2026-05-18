@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION=swedencentral}"
+    },
+    "principalId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "defaultModelCapacity": {
+      "value": "${DEFAULT_MODEL_CAPACITY=20}"
+    },
+    "defaultModelName": {
+      "value": "${DEFAULT_MODEL_NAME=o4-mini}"
+    },
+    "defaultModelVersion": {
+      "value": "${DEFAULT_MODEL_VERSION=2025-04-16}"
+    }
+  }
+}
