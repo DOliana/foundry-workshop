@@ -1,0 +1,65 @@
+# ---- Azure Developer CLI ----
+# Local azd env state (subscription IDs, principal IDs, output values).
+# Each participant has their own; never share.
+.azure/
+
+# ---- Environment files ----
+.env
+.env.*
+!.env.example
+local.settings.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ---- Azure Functions (Python) ----
+.python_packages/
+*.zip
+
+# ---- Bicep ----
+# Compiled ARM output from `az bicep build` lands next to the .bicep source.
+# We commit main.parameters.json (source) but never compiled artifacts.
+infra/main.json
+infra/modules/*.json
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- VS Code ----
+# Allow extension recommendations + shared launch/tasks for the workshop,
+# but keep personal workspace state out.
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Logs & temp ----
+*.log
+*.tmp
+*.bak
+*.swp
+
+# ---- Secrets (defense in depth) ----
+*.pem
+*.key
+*.pfx
+secrets.json
