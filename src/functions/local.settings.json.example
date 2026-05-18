@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AZURE_STORAGE_BLOB_ENDPOINT": "",
+    "AZURE_STORAGE_QUEUE_ENDPOINT": "",
+    "ASSESSMENTS_CONTAINER": "assessments",
+    "LOGS_CONTAINER": "logs",
+    "SAMPLE_DOCS_CONTAINER": "sample-docs",
+    "REVIEWER_QUEUE_NAME": "reviewer-inbox"
+  }
+}
