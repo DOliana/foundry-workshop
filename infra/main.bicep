@@ -135,6 +135,7 @@ output AZURE_AI_FOUNDRY_ENDPOINT string = foundry.outputs.foundryEndpoint
 output AZURE_AI_FOUNDRY_PROJECT_NAME string = foundry.outputs.projectName
 output AZURE_AI_FOUNDRY_PROJECT_ENDPOINT string = foundry.outputs.projectEndpoint
 output AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT string = foundry.outputs.defaultModelDeploymentName
+output AZURE_AI_FOUNDRY_PORTAL_URL string = 'https://ai.azure.com/build/overview?wsid=/subscriptions/${subscription().subscriptionId}/resourceGroups/${rg.name}/providers/Microsoft.CognitiveServices/accounts/${foundry.outputs.foundryName}/projects/${foundry.outputs.projectName}&tid=${subscription().tenantId}'
 
 output AZURE_AI_SEARCH_NAME string = search.outputs.searchName
 output AZURE_AI_SEARCH_ENDPOINT string = search.outputs.searchEndpoint
