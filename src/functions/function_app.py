@@ -86,42 +86,42 @@ def _blob_client() -> BlobServiceClient:
 #
 # Uncomment the block below in **Lab 01, step 4** before `azd deploy functions`.
 
-# @app.route(route="log_request", methods=["POST"])
-# def log_request(req: func.HttpRequest) -> func.HttpResponse:
-#     """Persist a governance log entry to the `logs` container.
+@app.route(route="log_request", methods=["POST"])
+def log_request(req: func.HttpRequest) -> func.HttpResponse:
+    """Persist a governance log entry to the `logs` container.
 
-#     Called by the agent at the start of every conversation (chat or voice).
-#     Returns 201 with the assigned log id. Idempotent on (conversation_id, started_at).
-#     """
-#     try:
-#         body = req.get_json()
-#     except ValueError:
-#         return func.HttpResponse("invalid json", status_code=400)
+    Called by the agent at the start of every conversation (chat or voice).
+    Returns 201 with the assigned log id. Idempotent on (conversation_id, started_at).
+    """
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse("invalid json", status_code=400)
 
-#     conversation_id = body.get("conversation_id") or str(uuid.uuid4())
-#     entry = {
-#         "conversation_id": conversation_id,
-#         "user_principal": body.get("user_principal"),
-#         "started_at": body.get("started_at") or datetime.utcnow().isoformat() + "Z",
-#         "channel": body.get("channel", "chat"),
-#         "locale": body.get("locale", "en-US"),
-#         "intent": body.get("intent"),
-#         "metadata": body.get("metadata", {}),
-#     }
+    conversation_id = body.get("conversation_id") or str(uuid.uuid4())
+    entry = {
+        "conversation_id": conversation_id,
+        "user_principal": body.get("user_principal"),
+        "started_at": body.get("started_at") or datetime.utcnow().isoformat() + "Z",
+        "channel": body.get("channel", "chat"),
+        "locale": body.get("locale", "en-US"),
+        "intent": body.get("intent"),
+        "metadata": body.get("metadata", {}),
+    }
 
-#     container = os.environ.get("LOGS_CONTAINER", "logs")
-#     blob_name = f"{datetime.utcnow().strftime('%Y/%m/%d')}/{conversation_id}.json"
-#     _blob_client().get_blob_client(container=container, blob=blob_name).upload_blob(
-#         json.dumps(entry, ensure_ascii=False, indent=2),
-#         overwrite=True,
-#     )
+    container = os.environ.get("LOGS_CONTAINER", "logs")
+    blob_name = f"{datetime.utcnow().strftime('%Y/%m/%d')}/{conversation_id}.json"
+    _blob_client().get_blob_client(container=container, blob=blob_name).upload_blob(
+        json.dumps(entry, ensure_ascii=False, indent=2),
+        overwrite=True,
+    )
 
-#     log.info("Logged request: conversation_id=%s blob=%s", conversation_id, blob_name)
-#     return func.HttpResponse(
-#         json.dumps({"conversation_id": conversation_id, "log_blob": blob_name}),
-#         status_code=201,
-#         mimetype="application/json",
-#     )
+    log.info("Logged request: conversation_id=%s blob=%s", conversation_id, blob_name)
+    return func.HttpResponse(
+        json.dumps({"conversation_id": conversation_id, "log_blob": blob_name}),
+        status_code=201,
+        mimetype="application/json",
+    )
 # --- END log_request ---
 
 

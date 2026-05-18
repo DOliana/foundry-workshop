@@ -37,7 +37,7 @@ items = [json.loads(line) for line in Path("data/eval/grounding-citations.jsonl"
 # Wire the evaluator
 groundedness = GroundednessEvaluator(model_config={
     "azure_endpoint": "<foundry endpoint>",
-    "azure_deployment": "<o4-mini deployment>",
+    "azure_deployment": "<gpt-4.1-mini deployment>",
 })
 
 # Run against the grounded agent

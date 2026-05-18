@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-azuretools.azure-dev",
+    "ms-azuretools.vscode-bicep",
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-toolsai.jupyter"
+  ]
+}

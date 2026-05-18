@@ -66,7 +66,7 @@ When prompted:
 
 Provisioning takes ~10 minutes. While it runs, skim [`../../README.md`](../../README.md) for the workshop overview.
 
-After it finishes you should see a Foundry account, a Foundry project (`noclar-assessment`) with an `o4-mini` deployment, an empty Function App, a Storage account, an AI Search service, an Application Insights workspace, and an Azure Communication Services resource. Empty here means: the platforms exist, but no agents, no Function code, no Search indexes, no queue messages.
+After it finishes you should see a Foundry account, a Foundry project (`noclar-assessment`) with an `gpt-4.1-mini` deployment, an empty Function App, a Storage account, an AI Search service, an Application Insights workspace, and an Azure Communication Services resource. Empty here means: the platforms exist, but no agents, no Function code, no Search indexes, no queue messages.
 
 ## 4. Capture outputs
 
@@ -79,7 +79,7 @@ This writes resource endpoints and names into a local `.env` file used by Python
 Spot-check that at least these keys exist:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
-- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `o4-mini`)
+- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-4.1-mini`)
 - `AZURE_AI_FOUNDRY_PORTAL_URL`
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`
 
@@ -96,7 +96,7 @@ azd env get-value AZURE_AI_FOUNDRY_PORTAL_URL
 Open the URL in the browser. Confirm:
 
 - The project `noclar-assessment` is selected (top-left).
-- Under **My assets → Models + endpoints** you see `o4-mini`.
+- Under **My assets → Models + endpoints** you see `gpt-4.1-mini`.
 - Under **Build → Agents** the list is **empty** (you'll create agents starting in Lab 01).
 
 > If `AZURE_AI_FOUNDRY_PORTAL_URL` is empty, you provisioned against an older
@@ -114,7 +114,7 @@ In the [Azure Portal](https://portal.azure.com), navigate to your resource group
 
 - [ ] `azd provision` completed without errors.
 - [ ] `.env` has `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`, `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT`, `AZURE_AI_FOUNDRY_PORTAL_URL`, `APPLICATIONINSIGHTS_CONNECTION_STRING`.
-- [ ] The Foundry portal opens via the deep link, the project `noclar-assessment` is selected, and `o4-mini` shows under **Models + endpoints**.
+- [ ] The Foundry portal opens via the deep link, the project `noclar-assessment` is selected, and `gpt-4.1-mini` shows under **Models + endpoints**.
 - [ ] The Foundry **Agents** list is empty (it will be populated as you work through Labs 01–04).
 
 ## Fallback

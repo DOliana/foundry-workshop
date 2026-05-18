@@ -16,7 +16,7 @@ This is a tracker, not a tutorial — follow each lab's own `README.md` for the 
 2. `azd env new foundry-<initials>` creates an azd environment locally.
 3. `azd provision` (not `azd up`) executes the Bicep at [`infra/main.bicep`](../infra/main.bicep) against your subscription. **Infra only — no Function code is deployed yet.**
 4. `azd env get-values > .env` snapshots the outputs into a local file.
-5. Open the Foundry portal via the deep link in `AZURE_AI_FOUNDRY_PORTAL_URL` and confirm the project + `o4-mini` deployment are visible.
+5. Open the Foundry portal via the deep link in `AZURE_AI_FOUNDRY_PORTAL_URL` and confirm the project + `gpt-4.1-mini` deployment are visible.
 6. (Optional) Peek at App Insights Live Metrics.
 
 ### Created locally
@@ -32,7 +32,7 @@ All resources land in the resource group `rg-foundry-<initials>` (whatever you u
 
 | Resource | Service | State after Lab 00 |
 | --- | --- | --- |
-| `aif-<suffix>` | Azure AI Foundry account (AIServices) | Active; `o4-mini` model deployment ready. **Used in Lab 00.** |
+| `aif-<suffix>` | Azure AI Foundry account (AIServices) | Active; `gpt-4.1-mini` model deployment ready. **Used in Lab 00.** |
 | `aif-<suffix>/noclar-assessment` | Foundry project | Active; **no agents, no connections.** Used from Lab 01 onwards. |
 | `appi-<suffix>` | Application Insights | Receiving zero traffic. **Used in Lab 00 (Live Metrics peek).** |
 | `log-<suffix>` | Log Analytics workspace | Backing store for App Insights. |
@@ -54,7 +54,7 @@ Only these are actively used during Lab 00. The rest become relevant from Lab 01
 
 - [ ] Resource group `rg-foundry-<initials>` shows ~8 resources in the Azure Portal.
 - [ ] `.env` exists and contains the four keys above.
-- [ ] Foundry portal opens via the deep link; `o4-mini` is listed under **Models + endpoints**; **Agents** list is empty.
+- [ ] Foundry portal opens via the deep link; `gpt-4.1-mini` is listed under **Models + endpoints**; **Agents** list is empty.
 
 ---
 
@@ -65,7 +65,7 @@ Only these are actively used during Lab 00. The rest become relevant from Lab 01
 **What happens:**
 
 1. Open the Foundry project (using `AZURE_AI_FOUNDRY_PORTAL_URL` from Lab 00).
-2. Create the `noclar-intake` agent in the portal: model `o4-mini`, system prompt pasted from [`../src/agents/prompts/intake.md`](../src/agents/prompts/intake.md), no tools yet.
+2. Create the `noclar-intake` agent in the portal: model `gpt-4.1-mini`, system prompt pasted from [`../src/agents/prompts/intake.md`](../src/agents/prompts/intake.md), no tools yet.
 3. Test it in the Playground — observe a German intake conversation without `log_request`.
 4. Deploy the Functions code with `azd deploy functions` and run the smoke test ([`01-first-agent/smoke-test.ps1`](./01-first-agent/smoke-test.ps1) / [`.sh`](./01-first-agent/smoke-test.sh)) to confirm the round-trip.
 5. Attach `log_request` as an OpenAPI tool on the agent (using [`../src/functions/openapi.yaml`](../src/functions/openapi.yaml) + the function key from `az functionapp keys list`).

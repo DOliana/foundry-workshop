@@ -15,7 +15,7 @@
       "value": "${DEFAULT_MODEL_CAPACITY=20}"
     },
     "defaultModelName": {
-      "value": "${DEFAULT_MODEL_NAME=o4-mini}"
+      "value": "${DEFAULT_MODEL_NAME=gpt-4.1-mini}"
     },
     "defaultModelVersion": {
       "value": "${DEFAULT_MODEL_VERSION=2025-04-16}"

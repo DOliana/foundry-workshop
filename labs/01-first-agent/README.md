@@ -29,7 +29,7 @@ Open the URL. Confirm:
 
 - Project `noclar-assessment` is selected.
 - **Build → Agents** is empty (you'll fix that in step 2).
-- **My assets → Models + endpoints** shows `o4-mini`.
+- **My assets → Models + endpoints** shows `gpt-4.1-mini`.
 
 ## 2. Create the `noclar-intake` agent — no tools yet (10 min)
 
@@ -37,7 +37,7 @@ In the portal:
 
 1. **Build → Agents → + New agent**.
 2. **Name:** `noclar-intake`
-3. **Deployment:** select `o4-mini`.
+3. **Deployment:** select `gpt-4.1-mini`.
 4. **Instructions:** open [`../../src/agents/prompts/intake.md`](../../src/agents/prompts/intake.md), copy the whole file content, paste it into the Instructions box.
    - Yes, the prompt mentions a `log_request` tool. The agent will *want* to call it but won't be able to yet. That's intentional — you will see the failure mode in step 3, then fix it in step 6.
 5. Leave **Tools** empty for now.
@@ -124,6 +124,7 @@ az functionapp keys list --name $(azd env get-value AZURE_FUNCTION_APP_NAME) \
 In the portal:
 
 1. Open the `noclar-intake` agent → **Tools → + Add → OpenAPI 3.0 specified tool**.
+   1. in new foundry: tools section → Add → Browse all tools → 
 2. **Tool name:** `log_request`
 3. **Schema:** open [`../../src/functions/openapi.yaml`](../../src/functions/openapi.yaml), copy the content, paste into the Schema editor.
 4. **Edit the `servers:` block** — replace `REPLACE-WITH-AZURE_FUNCTION_APP_HOSTNAME` with the hostname you fetched above (just the host, no `https://`).

@@ -16,11 +16,11 @@ param location string = 'swedencentral'
 @description('Principal ID of the deploying user (azd populates from `azd auth login`)')
 param principalId string = ''
 
-@description('TPM capacity (thousands) for the default o4-mini deployment. Keep modest.')
-param defaultModelCapacity int = 20
+@description('TPM capacity (thousands) for the default gpt-4.1-mini deployment. Keep modest.')
+param defaultModelCapacity int = 50
 
 @description('Default chat model name to deploy')
-param defaultModelName string = 'o4-mini'
+param defaultModelName string = 'gpt-4.1-mini'
 
 @description('Default chat model version')
 param defaultModelVersion string = '2025-04-16'
