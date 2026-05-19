@@ -27,7 +27,7 @@ foundry-workshop/
 ├── infra/                  Bicep infrastructure (azd)
 ├── src/
 │   ├── functions/          Python Azure Functions app
-│   ├── agents/             Microsoft Agent Framework agents + tools
+│   ├── labs/               Lab code (one folder per block) + shared agent prompts
 │   ├── voice/              Voice Live SDK demo
 │   └── shared/             Schemas, config helpers
 ├── data/
@@ -51,7 +51,7 @@ foundry-workshop/
   - Git
 - **Quota:** the deployment uses **Sweden Central** and requests a *modest* TPM allocation for `gpt-4.1-mini`. If your subscription has no quota there, see [`labs/00-setup/README.md`](labs/00-setup/README.md) for fallback options.
 
-See [`PARTICIPANT-SETUP.md`](PARTICIPANT-SETUP.md) for the 1-page quickstart.
+See [`labs/00-setup/README.md`](labs/00-setup/README.md) for the lab-by-lab walkthrough.
 
 ---
 

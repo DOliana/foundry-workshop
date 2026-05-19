@@ -46,8 +46,8 @@ uncomment.
 | `src/functions/notify_reviewer.py` | Function: enqueue reviewer notification. |
 | `src/functions/process_reviewer.py` | Queue-trigger Function (optional). |
 | `src/functions/function_app.py` | Uncomment the **two `app.register_blueprint(...)` lines** for Lab 02. |
-| `src/agents/lab02/orchestrator.py` | The Python orchestrator. |
-| `src/agents/lab02/functions_tools.py` | httpx wrappers around the Functions HTTP endpoints. |
+| `src/labs/lab02/orchestrator.py` | The Python orchestrator. |
+| `src/labs/lab02/functions_tools.py` | httpx wrappers around the Functions HTTP endpoints. |
 
 In VS Code: select the commented block, **Ctrl+/** (toggle line
 comment) flips the whole block in one shot.
@@ -55,7 +55,7 @@ comment) flips the whole block in one shot.
 Compile-check then deploy the Functions code:
 
 ```bash
-python -m py_compile src/functions/*.py src/agents/lab02/*.py
+python -m py_compile src/functions/*.py src/labs/lab02/*.py
 azd deploy functions
 ```
 
@@ -73,7 +73,7 @@ azd deploy functions
 |---|---|---|
 | Model | `gpt-4.1-mini` | `gpt-4.1-mini` |
 | Response format | **JSON object** | **JSON object** |
-| Instructions | paste [`legal_classifier.md`](../../src/agents/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/agents/prompts/drafter.md) |
+| Instructions | paste [`legal_classifier.md`](../../src/labs/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/labs/prompts/drafter.md) |
 | Tools | **none** — see callout below | **none** — see callout below |
 | Knowledge | none | none |
 
@@ -97,7 +97,7 @@ azd deploy functions
 
 ## 3. Read the orchestrator (5 min)
 
-Open [`src/agents/lab02/orchestrator.py`](../../src/agents/lab02/orchestrator.py).
+Open [`src/labs/lab02/orchestrator.py`](../../src/labs/lab02/orchestrator.py).
 Spend 5 minutes on it. The file *is* the lab content. Notes:
 
 - `_interactive_intake` — a thin 2-turn driver. Turn 1: client name.
@@ -124,7 +124,7 @@ it installs into your user site (`~/.local`) automatically, which
 `/usr/local/lib/...` and fails as the non-root container user):
 
 ```bash
-pip install -r src/agents/requirements.txt
+pip install -r src/labs/requirements.txt
 ```
 
 **Windows native / local Linux / macOS:** use a venv. `uv` works
@@ -135,8 +135,8 @@ bash:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-uv pip install -r src/agents/requirements.txt
-# if uv is not available: pip install -r src/agents/requirements.txt
+uv pip install -r src/labs/requirements.txt
+# if uv is not available: pip install -r src/labs/requirements.txt
 ```
 
 PowerShell:
@@ -144,9 +144,9 @@ PowerShell:
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-uv pip install -r src/agents/requirements.txt
+uv pip install -r src/labs/requirements.txt
 # if uv is not available or you are not using a venv: 
-# pip install -r src/agents/requirements.txt
+# pip install -r src/labs/requirements.txt
 ```
 
 Smoke check the install:
@@ -156,7 +156,7 @@ python -c "import agent_framework, azure.ai.projects; print('deps ok')"
 ```
 
 The Foundry endpoint and Functions hostname are already in `.env`
-from Lab 00 (`azd env get-values > .env`). Importing `src.agents`
+from Lab 00 (`azd env get-values > .env`). Importing `src.labs`
 auto-loads that file via `python-dotenv`, so you do **not** need to
 source `.env` from your shell.
 
@@ -193,7 +193,7 @@ needs: `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`,
 > never sources the values into your shell. Rather than asking you
 > to source the file (syntax differs across bash / zsh /
 > PowerShell), the lab code auto-loads `.env` on import via
-> `python-dotenv` (see `src/agents/__init__.py`). The same applies
+> `python-dotenv` (see `src/labs/__init__.py`). The same applies
 > to Labs 03, 04, and 05.
 
 ## 5. Happy path (15 min)
@@ -205,14 +205,14 @@ into a terminal is fragile) or from stdin.
 From a file (recommended):
 
 ```bash
-python -m src.agents.lab02.orchestrator --tip-file data/sample-docs/tip.md
+python -m src.labs.lab02.orchestrator --tip-file data/sample-docs/tip.md
 ```
 
 Interactive (only for short, single-paragraph tips you type by
 hand):
 
 ```bash
-python -m src.agents.lab02.orchestrator
+python -m src.labs.lab02.orchestrator
 ```
 
 Step through:
@@ -236,7 +236,7 @@ your memo is there as `<case_id>/memo-<timestamp>.json`.
 ## 6. Negative path (5 min)
 
 ```bash
-python -m src.agents.lab02.orchestrator --bypass-hitl
+python -m src.labs.lab02.orchestrator --bypass-hitl
 ```
 
 Paste the same fixture. The orchestrator skips both gates, the memo

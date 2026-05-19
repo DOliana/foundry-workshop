@@ -1,15 +1,22 @@
 """Idempotent provisioning of the Foundry project for the workshop.
 
-**Instructor-only helper.** Pre-warms an RG so the participant's lab
-flow skips waiting on the per-lab ingest. In the workshop the
-participants run their own per-lab scripts:
+**Instructor-only helper.** Pre-warms an RG end-to-end so participants
+can skip ahead if they fall behind. In the normal workshop flow,
+participants build each artefact themselves:
 
-  - Lab 02 creates the specialist agents in the portal.
-  - Lab 03 runs `python -m src.agents.lab03.ingest_corpus` against
-    the Search service.
+  - Lab 01 creates `noclar-intake` in the portal.
+  - Lab 02 creates `noclar-legal-classifier` + `noclar-drafter`.
+  - Lab 03 runs `python -m src.labs.lab03.ingest_corpus`, creates
+    the AI Search connection, and adds the `noclar-grounded` agent.
+  - Lab 04 adds the `noclar-orchestrator` agent.
 
-This script is retained as a "do everything at once" shortcut for
-instructor dry-runs or pre-warming N RGs in parallel.
+This script performs all of the above in one shot:
+
+  - Uploads `data/sample-docs/` to the sample-docs container.
+  - Creates the `noclar-corpus` AI Search index and indexes the corpus.
+  - Creates/updates the five workshop agents (intake, grounded,
+    legal-classifier, drafter, orchestrator) from the prompt files
+    in `src/labs/prompts/`.
 
 Run AFTER `azd provision`. Reads endpoint + names from
 `azd env get-values`.
@@ -40,7 +47,7 @@ log = logging.getLogger("seed-foundry-project")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SAMPLE_DOCS = REPO_ROOT / "data" / "sample-docs"
-PROMPTS_DIR = REPO_ROOT / "src" / "agents" / "prompts"
+PROMPTS_DIR = REPO_ROOT / "src" / "labs" / "prompts"
 
 INDEX_NAME = "noclar-corpus"
 SEARCH_CONNECTION_NAME = "noclar-search"

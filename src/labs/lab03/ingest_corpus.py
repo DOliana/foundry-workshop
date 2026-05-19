@@ -13,8 +13,8 @@
 
 # Run (after uncommenting):
 
-#     pip install -r src/agents/lab03/requirements.txt
-#     python -m src.agents.lab03.ingest_corpus
+#     pip install -r src/labs/lab03/requirements.txt
+#     python -m src.labs.lab03.ingest_corpus
 
 # Required env vars:
 

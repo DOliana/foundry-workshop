@@ -9,9 +9,9 @@
 
 # Run (after uncommenting):
 
-#     python -m src.agents.lab02.orchestrator                                     # interactive
-#     python -m src.agents.lab02.orchestrator --tip-file data/sample-docs/tip.md  # tip from file
-#     python -m src.agents.lab02.orchestrator --bypass-hitl                       # negative path
+#     python -m src.labs.lab02.orchestrator                                     # interactive
+#     python -m src.labs.lab02.orchestrator --tip-file data/sample-docs/tip.md  # tip from file
+#     python -m src.labs.lab02.orchestrator --bypass-hitl                       # negative path
 
 # Required env vars:
 
@@ -39,7 +39,7 @@
 # from azure.identity.aio import DefaultAzureCredential
 # from pathlib import Path
 
-# from src.agents.lab02.functions_tools import notify_reviewer, persist_assessment
+# from src.labs.lab02.functions_tools import notify_reviewer, persist_assessment
 # from src.shared.schemas import AssessmentMemo, IntakeFacts, LegalNormReference
 # from src.shared.telemetry import configure_telemetry
 

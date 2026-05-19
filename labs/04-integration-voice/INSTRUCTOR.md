@@ -34,20 +34,20 @@ in the room.
 
 ### Voice agent setup (none required for the slim demo)
 
-The released `azure-ai-voicelive==1.0.0b1` SDK does **not** yet
-support agent-mode — `agent_config` only exists on the master branch
-of the azure-sdk-for-python repo. The slim
-`src/voice/voice_agent_demo.py` therefore bypasses the Foundry agent
-abstraction entirely and talks straight to the realtime deployment,
-loading the same system prompt from
-[`src/agents/prompts/voice_intake.md`](../../src/agents/prompts/voice_intake.md)
+The workshop demo uses the GA `azure-ai-voicelive>=1.1.0` SDK and
+talks straight to the realtime *deployment* in your Foundry project
+(`gpt-realtime-1.5` by default — provisioned by
+`infra/modules/foundry.bicep`). It bypasses Foundry's voice-agent
+abstraction entirely, loading the same system prompt from
+[`src/labs/prompts/voice_intake.md`](../../src/labs/prompts/voice_intake.md)
 and passing it as `RequestSession.instructions`.
 
 That means **you do not need to create a `noclar-voice-intake` agent
-in the Foundry portal** for the demo to work. When agent-mode ships
-in the SDK, swap `connect(model=...)` back to
-`connect(agent_config={"agent_name": "noclar-voice-intake", "project_name": ...})`
-and create the agent then.
+in the Foundry portal** for the demo to work. Auth is AAD-only —
+the Foundry account key is rejected by Voice Live in this workshop's
+configuration. `scripts/postdeploy-rbac.{ps1,sh}` grants the two
+roles Voice Live requires: `Cognitive Services User` and
+`Azure AI User` (a.k.a. *Foundry User*) on the Foundry account.
 
 > The audience-facing pitch ("same agent, different channel") still
 > holds: it's the same prompt and the same realtime deployment that

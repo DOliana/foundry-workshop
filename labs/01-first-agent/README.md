@@ -57,7 +57,7 @@ Top-left: the project `noclar-assessment` is selected. Under
 - **Response format:** **JSON object** (the prompt asks for a JSON
   result, the response-format toggle hardens it)
 - **Instructions:** paste the contents of
-  [`src/agents/prompts/intake.md`](../../src/agents/prompts/intake.md)
+  [`src/labs/prompts/intake.md`](../../src/labs/prompts/intake.md)
   verbatim
 - **Tools:** **none.** Foundry attaches a default Web Search /
   Grounding tool to every new agent — **delete it**. JSON-object

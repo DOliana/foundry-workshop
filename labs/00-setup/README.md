@@ -78,8 +78,11 @@ git --version
 > swap `pip` for `uv pip` for the speed-up. To install `uv`:
 > `pip install uv` or `winget install --id=astral-sh.uv`.
 
-If anything is missing, see
-[`../../PARTICIPANT-SETUP.md`](../../PARTICIPANT-SETUP.md).
+If anything is missing, install the missing CLI before continuing:
+[`az`](https://learn.microsoft.com/cli/azure/install-azure-cli),
+[`azd`](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd),
+[Python 3.11+](https://www.python.org/downloads/), and
+[Git](https://git-scm.com/downloads).
 
 ## 2. Sign in
 

@@ -9,9 +9,9 @@
 
 # Run (after uncommenting):
 
-#     python -m src.agents.lab03.ground_query "What does the anti-bribery policy require?"
-#     python -m src.agents.lab03.ground_query "..." --document-type policy --language en
-#     python -m src.agents.lab03.ground_query "..." --jurisdiction EU
+#     python -m src.labs.lab03.ground_query "What does the anti-bribery policy require?"
+#     python -m src.labs.lab03.ground_query "..." --document-type policy --language en
+#     python -m src.labs.lab03.ground_query "..." --jurisdiction EU
 # """
 
 # from __future__ import annotations

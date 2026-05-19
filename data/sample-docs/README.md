@@ -31,7 +31,7 @@ filterable / facetable fields of the Search index.
 ## How it is used
 
 - **Lab 02** — participants paste `tip.md` as their input.
-- **Lab 03** — `src/agents/lab03/ingest_corpus.py` reads every file
+- **Lab 03** — `src/labs/lab03/ingest_corpus.py` reads every file
   in this folder, chunks the body, embeds each chunk with the
   Foundry embedding deployment, and uploads to Azure AI Search.
 - **Lab 03** — Content Understanding extracts structured fields

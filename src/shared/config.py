@@ -16,7 +16,7 @@ def load_env() -> None:
 
     Lab 00 writes `.env` via `azd env get-values > .env` but never sources
     it. Every lab entrypoint calls this (directly or transitively via
-    `src/agents/__init__.py`) so the file is picked up automatically. Safe
+    `src/labs/__init__.py`) so the file is picked up automatically. Safe
     to call repeatedly; `load_dotenv()` is idempotent and a no-op when no
     `.env` is present.
     """

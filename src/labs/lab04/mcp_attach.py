@@ -9,8 +9,8 @@ Ships **fully commented**. Lab 04 step 1 uncomments this file.
 
 Run (after uncommenting):
 
-    python -m src.agents.lab04.mcp_attach            # just print URL
-    python -m src.agents.lab04.mcp_attach --probe    # also list_tools
+    python -m src.labs.lab04.mcp_attach            # just print URL
+    python -m src.labs.lab04.mcp_attach --probe    # also list_tools
 """
 
 # from __future__ import annotations

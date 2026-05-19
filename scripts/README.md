@@ -11,7 +11,7 @@
 
 ```powershell
 azd env get-values > .env
-pip install -r src/agents/requirements.txt
+pip install -r src/labs/requirements.txt
 python scripts/seed_foundry_project.py
 ./scripts/deploy-functions.ps1
 ```

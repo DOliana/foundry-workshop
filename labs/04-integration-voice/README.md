@@ -19,11 +19,11 @@ Instructor prep is in [`INSTRUCTOR.md`](./INSTRUCTOR.md).
 |---|---|
 | `src/functions/log_request.py` | Governance-logging Function (Lab 04's home). |
 | `src/functions/function_app.py` | Uncomment the `log_request` blueprint registration. |
-| `src/agents/lab04/mcp_attach.py` | Prints the Learn MCP URL; can probe `list_tools`. |
-| `src/agents/lab04/custom_tool.py` | Stub for your own function tool. |
+| `src/labs/lab04/mcp_attach.py` | Prints the Learn MCP URL; can probe `list_tools`. |
+| `src/labs/lab04/custom_tool.py` | Stub for your own function tool. |
 
 ```bash
-python -m py_compile src/functions/log_request.py src/agents/lab04/*.py
+python -m py_compile src/functions/log_request.py src/labs/lab04/*.py
 azd deploy functions
 ```
 
@@ -59,7 +59,7 @@ The Lab 02 orchestrator is deterministic Python. The same Functions
 can also be driven by an **LLM-driven agent** for contrast.
 
 1. **+ New agent** → `noclar-orchestrator` → `gpt-4.1-mini`.
-2. Paste [`src/agents/prompts/orchestrator.md`](../../src/agents/prompts/orchestrator.md).
+2. Paste [`src/labs/prompts/orchestrator.md`](../../src/labs/prompts/orchestrator.md).
 3. **Tools → + Add → OpenAPI 3.0 specified tool** →
    [`src/functions/openapi-orchestrator.json`](../../src/functions/openapi-orchestrator.json)
    — same host + function-key flow.
@@ -83,13 +83,13 @@ can also be driven by an **LLM-driven agent** for contrast.
 Optional probe from the CLI:
 
 ```bash
-python -m src.agents.lab04.mcp_attach --probe
+python -m src.labs.lab04.mcp_attach --probe
 ```
 
 ## 5. Write a custom function tool (10 min)
 
 Open
-[`src/agents/lab04/custom_tool.py`](../../src/agents/lab04/custom_tool.py).
+[`src/labs/lab04/custom_tool.py`](../../src/labs/lab04/custom_tool.py).
 Pick **one** scenario:
 
 - **Scenario A:** `check_sanctions_list(name) -> bool` — returns
@@ -108,12 +108,12 @@ Trigger it from the Playground or a Python smoke script.
 
 ## 6. Voice Live demo (10 min — instructor)
 
-> **Prereq:** the `noclar-voice-intake` agent must exist (created
-> once by the instructor before the workshop — see
-> [`INSTRUCTOR.md`](./INSTRUCTOR.md)). The voice demo uses this
-> agent, not the JSON-mode `noclar-intake` from Lab 01/02 — the
-> realtime TTS reads whatever the agent emits, and a JSON-emitting
-> agent over voice sounds terrible.
+> **Prereq:** AAD auth to Voice Live requires two roles on the
+> Foundry account (`Cognitive Services User` + `Azure AI User`).
+> `scripts/postdeploy-rbac.{ps1,sh}` from Lab 00 grants both. The
+> demo connects directly to the realtime *deployment*
+> (`gpt-realtime-1.5`) — no separate `noclar-voice-intake` agent
+> needed. See [`INSTRUCTOR.md`](./INSTRUCTOR.md).
 >
 > **Env:** `_log_request` reads `AZURE_FUNCTION_KEY` from `.env`
 > (auto-loaded on import). The key is appended to `.env` in

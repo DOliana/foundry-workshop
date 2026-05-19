@@ -21,10 +21,15 @@ judge is non-deterministic, so expect ±1 on integer scales).
 
 ---
 
-## 1. install the requirements
+## 1. Uncomment and install
+
+| File | Purpose |
+|---|---|
+| `src/labs/lab05/run_eval.py` | SDK-driven evaluation script. |
 
 ```bash
-pip install -r src/agents/lab05/requirements.txt
+python -m py_compile src/labs/lab05/run_eval.py
+pip install -r src/labs/lab05/requirements.txt
 ```
 
 ## 2. Run the eval from the portal (15 min — primary)
@@ -64,7 +69,7 @@ Walk the results:
 ## 3. Run the same eval from the SDK (10 min)
 
 ```bash
-python -m src.agents.lab05.run_eval
+python -m src.labs.lab05.run_eval
 ```
 
 The script reads the same JSONL, calls `noclar-grounded`, scores

@@ -5,7 +5,7 @@ Adapted from Microsoft's `model-quickstart.py` Voice Live sample
 the bits the workshop needs:
 
 * Reads the Foundry endpoint + realtime deployment from our settings.
-* Loads the `noclar-voice-intake` system prompt from disk.
+* Loads the voice intake system prompt from disk.
 * Opens a governance log entry before the WebSocket session starts.
 
 Run on the **host** (not the devcontainer — audio devices aren't
@@ -218,7 +218,7 @@ async def _stream_voice(conversation_id: str) -> None:
     )
 
     prompt_path = (
-        Path(__file__).resolve().parents[1] / "agents" / "prompts" / "voice_intake.md"
+        Path(__file__).resolve().parents[1] / "labs" / "prompts" / "voice_intake.md"
     )
     instructions = prompt_path.read_text(encoding="utf-8")
 
