@@ -1,8 +1,17 @@
-azure-ai-agents==1.1.0b1
-azure-ai-projects==1.0.0b10
-azure-identity==1.19.0
-azure-search-documents==11.6.0b8
-azure-storage-blob==12.23.1
-httpx==0.27.2
-pydantic==2.9.2
-python-dotenv==1.0.1
+# Lab 02 orchestrator (local Python, Microsoft Agent Framework).
+# The hosted Foundry agents (intake / classifier / drafter) are created
+# in the portal in Lab 02 and resolved from this script by name.
+agent-framework>=1.0.0,<2.0
+azure-ai-projects>=2.1.0,<3.0
+azure-identity>=1.19,<2
+httpx>=0.27,<0.29
+# agent-framework-core[all] pulls in mcp>=1.24, which requires pydantic>=2.11.
+pydantic>=2.11,<3
+python-dotenv>=1.0,<2
+
+# Used directly by scripts/seed_foundry_project.py and the helper agents.
+# Version is resolved transitively via azure-ai-projects to stay compatible.
+azure-ai-agents
+# Used elsewhere in the repo (search seeding, blob inspection helpers).
+azure-search-documents>=11.5,<12
+azure-storage-blob>=12.23,<13

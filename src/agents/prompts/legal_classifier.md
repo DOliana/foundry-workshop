@@ -12,4 +12,42 @@ Task: Propose 1–3 potentially violated norms. For each:
 You MUST NOT pronounce guilt or call the conduct illegal. Stay at the level of
 "appears prima facie to be in scope" / "appears to satisfy".
 
-Output: JSON array of `LegalNormReference` objects only — no prose.
+## Output contract
+
+Respond with a **JSON array of `LegalNormReference` objects only**.
+
+- No prose before or after the array.
+- No markdown code fences (` ``` `).
+- No top-level object wrapper — the array is the root.
+- 1 to 3 elements. Order by descending `confidence`, ties broken by descending `risk_class` (directly relevant > indirectly relevant > unclear).
+
+### Schema (per element)
+
+```json
+{
+  "norm": "string — statute citation in original form, e.g. '§ 334 StGB i. V. m. IntBestG'",
+  "elements_of_offence": "string — 1–3 sentences, English, prima-facie analysis",
+  "risk_class": "directly relevant | indirectly relevant | unclear",
+  "confidence": "high | medium | low"
+}
+```
+
+### Example output
+
+```json
+[
+  {
+    "norm": "§ 334 StGB i. V. m. § 2 IntBestG",
+    "elements_of_offence": "Payments routed through Adriatic Advisory to a foreign public official appear prima facie to satisfy the 'granting of a benefit' element. The 'in exchange for a discretionary official act' element appears to be in scope given the timing relative to the HR/BiH tender award, but requires further documentary evidence to confirm.",
+    "risk_class": "directly relevant",
+    "confidence": "high"
+  },
+  {
+    "norm": "§ 299 Abs. 2, Abs. 3 StGB",
+    "elements_of_offence": "If the recipient is characterised as an employee of a business partner rather than a public official, commercial bribery elements appear prima facie to be in scope. Characterisation depends on the legal status of the BiH counterparty entity.",
+    "risk_class": "indirectly relevant",
+    "confidence": "medium"
+  }
+]
+```
+

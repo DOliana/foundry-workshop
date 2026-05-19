@@ -1,0 +1,165 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "NOCLAR Orchestrator — Functions API",
+    "version": "1.0.0",
+    "description": "OpenAPI spec for the tools attached to the `noclar-orchestrator` agent (Lab 02). Exposes the two HITL-related Functions:\n\n- `persist_assessment` writes the final approved memo. The Function refuses (409) if `approved_by` is missing.\n- `notify_reviewer` enqueues a reviewer notification on `reviewer-inbox`.\n\nThe intake sub-agent has its own spec (`openapi-intake.json`) for `log_request` and is reached as a Connected Agent, not via HTTP."
+  },
+  "servers": [
+    {
+      "url": "https://REPLACE-WITH-AZURE_FUNCTION_APP_HOSTNAME",
+      "description": "Replace with the hostname from `azd env get-value AZURE_FUNCTION_APP_HOSTNAME` (e.g. `func-noclar-abc123.azurewebsites.net`) before pasting into Foundry."
+    }
+  ],
+  "paths": {
+    "/api/persist_assessment": {
+      "post": {
+        "operationId": "persist_assessment",
+        "summary": "Persist a HITL-approved Initial Assessment Memo.",
+        "description": "Writes the full AssessmentMemo JSON to the `assessments` container. The Function REFUSES to persist (HTTP 409) unless `approved_by` is set — this is the persistence-layer HITL gate. Call only AFTER the user has explicitly approved the drafted memo.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PersistAssessmentInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Memo persisted.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PersistAssessmentOutput" }
+              }
+            }
+          },
+          "400": { "description": "Invalid JSON body." },
+          "409": { "description": "Memo missing `approved_by` — HITL gate not satisfied." }
+        },
+        "security": [
+          { "functionKey": [] }
+        ]
+      }
+    },
+    "/api/notify_reviewer": {
+      "post": {
+        "operationId": "notify_reviewer",
+        "summary": "Enqueue a reviewer notification for an out-of-band reviewer.",
+        "description": "Places a message on the `reviewer-inbox` queue so a downstream reviewer (Teams card / email in production, queue-trigger Function in this workshop) can act on it. Call AFTER drafting the memo, as part of the HITL handshake. Does not block; returns 202.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NotifyReviewerInput" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Notification queued.",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/NotifyReviewerOutput" }
+              }
+            }
+          },
+          "400": { "description": "Invalid JSON body." }
+        },
+        "security": [
+          { "functionKey": [] }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "functionKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-functions-key",
+        "description": "Azure Functions function-level access key. Get it with: `az functionapp keys list --name <funcApp> --resource-group <rg> --query masterKey -o tsv`"
+      }
+    },
+    "schemas": {
+      "PersistAssessmentInput": {
+        "type": "object",
+        "required": ["case_id", "approved_by"],
+        "additionalProperties": true,
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "description": "Engagement/case identifier. Used as the blob folder name."
+          },
+          "approved_by": {
+            "type": "string",
+            "description": "AAD UPN of the human reviewer who approved this memo. Required — the Function returns 409 if missing."
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO-8601 UTC timestamp of the approval."
+          },
+          "intake": {
+            "type": "object",
+            "description": "Full IntakeFacts object (case header, persons, facts, sources).",
+            "additionalProperties": true
+          },
+          "legal_assessment": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": true },
+            "description": "Confirmed legal classification entries (LegalNormReference shape)."
+          },
+          "memo_body_markdown": {
+            "type": "string",
+            "description": "Full memo body in Markdown, sections 1–8 per the template."
+          }
+        }
+      },
+      "PersistAssessmentOutput": {
+        "type": "object",
+        "properties": {
+          "case_id": { "type": "string" },
+          "memo_blob": {
+            "type": "string",
+            "description": "Blob path of the persisted memo, e.g. \"BPW-2025-HEL-001/memo-20260518T110523.json\"."
+          }
+        }
+      },
+      "NotifyReviewerInput": {
+        "type": "object",
+        "required": ["case_id", "memo_blob_path"],
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "description": "Conversation id to correlate the notification with the originating chat."
+          },
+          "case_id": { "type": "string" },
+          "memo_blob_path": {
+            "type": "string",
+            "description": "Path of the persisted memo blob (from persist_assessment)."
+          },
+          "summary": {
+            "type": "string",
+            "description": "Short summary of the matter to show in the reviewer notification."
+          },
+          "requested_reviewer": {
+            "type": "string",
+            "description": "AAD UPN or email of the human reviewer who should pick this up."
+          },
+          "drafted_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "NotifyReviewerOutput": {
+        "type": "object",
+        "properties": {
+          "queued": { "type": "boolean" },
+          "queue": { "type": "string" }
+        }
+      }
+    }
+  }
+}

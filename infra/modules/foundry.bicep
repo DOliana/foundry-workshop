@@ -24,6 +24,13 @@ param defaultModelVersion string = '2025-04-16'
 @description('TPM capacity for default model deployment (in thousands). Keep modest to leave room for manual deploys in Lab 1.')
 param defaultModelCapacity int = 20
 
+@description('Resource ID of the Application Insights instance to connect to the project (so agent traces show up in Foundry Tracing).')
+param appInsightsId string
+
+@description('Connection string of the Application Insights instance. Used as the ApiKey credential on the project connection.')
+@secure()
+param appInsightsConnectionString string
+
 #disable-next-line BCP037
 resource foundry 'Microsoft.CognitiveServices/accounts@2026-03-01' = {
   name: 'foundry-${resourceToken}'
@@ -73,6 +80,27 @@ resource defaultModelDeployment 'Microsoft.CognitiveServices/accounts/deployment
       version: defaultModelVersion
     }
     raiPolicyName: 'Microsoft.DefaultV2'
+  }
+}
+
+// Connect Application Insights to the Foundry project so agent runs, tool
+// calls, and LLM spans appear in the portal's Tracing view (used in Lab 01).
+#disable-next-line BCP037
+resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2026-03-01' = {
+  parent: foundryProject
+  name: 'appinsights'
+  properties: {
+    category: 'AppInsights'
+    target: appInsightsId
+    authType: 'ApiKey'
+    isSharedToAll: true
+    metadata: {
+      ApiType: 'Azure'
+      ResourceId: appInsightsId
+    }
+    credentials: {
+      key: appInsightsConnectionString
+    }
   }
 }
 

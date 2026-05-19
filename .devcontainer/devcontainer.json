@@ -19,14 +19,16 @@
 		}
 	},
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	// Workaround for pip 24.0 ensurepip AssertionError on overlayfs-backed
+	// dev container workspaces (pyc bytecode compile step is skipped, tripping
+	// an internal assert). Disabling bytecode compilation during pip installs
+	// lets `python -m venv .venv` succeed.
+	"remoteEnv": {
+		"PIP_NO_COMPILE": "1"
+	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install --upgrade pip && pip install ipykernel jupyter ipywidgets --upgrade",
+	"postCreateCommand": "PIP_NO_COMPILE=1 pip install --upgrade pip && pip install uv",
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
@@ -39,7 +41,4 @@
 			]
 		}
 	}
-
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
 }

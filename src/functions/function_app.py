@@ -65,16 +65,16 @@ def _blob_client() -> BlobServiceClient:
 
 
 # --- BEGIN _queue_client (uncomment in Lab 02) ---
-# def _queue_client() -> QueueServiceClient:
-#     """Used by `notify_reviewer` (Lab 02). The Lab 02 README walks you through enabling this."""
-#     global _credential, _queue
-#     if _queue is None:
-#         _credential = _credential or DefaultAzureCredential()
-#         _queue = QueueServiceClient(
-#             account_url=os.environ["AZURE_STORAGE_QUEUE_ENDPOINT"],
-#             credential=_credential,
-#         )
-#     return _queue
+def _queue_client() -> QueueServiceClient:
+    """Used by `notify_reviewer` (Lab 02). The Lab 02 README walks you through enabling this."""
+    global _credential, _queue
+    if _queue is None:
+        _credential = _credential or DefaultAzureCredential()
+        _queue = QueueServiceClient(
+            account_url=os.environ["AZURE_STORAGE_QUEUE_ENDPOINT"],
+            credential=_credential,
+        )
+    return _queue
 # --- END _queue_client ---
 
 
@@ -136,39 +136,39 @@ def log_request(req: func.HttpRequest) -> func.HttpResponse:
 #
 # Uncomment in **Lab 02** (orchestration + HITL) before re-deploying.
 #
-# @app.route(route="persist_assessment", methods=["POST"])
-# def persist_assessment(req: func.HttpRequest) -> func.HttpResponse:
-#     """Persist an approved Initial Assessment Memo to the `assessments` container.
-#
-#     Expects the full AssessmentMemo JSON in the body. Refuses to persist unless
-#     `approved_by` is set (HITL gate enforcement at the persistence layer).
-#     """
-#     try:
-#         memo = req.get_json()
-#     except ValueError:
-#         return func.HttpResponse("invalid json", status_code=400)
-#
-#     if not memo.get("approved_by"):
-#         return func.HttpResponse(
-#             json.dumps({"error": "memo missing approved_by — HITL gate not satisfied"}),
-#             status_code=409,
-#             mimetype="application/json",
-#         )
-#
-#     case_id = memo.get("case_id") or str(uuid.uuid4())
-#     container = os.environ.get("ASSESSMENTS_CONTAINER", "assessments")
-#     blob_name = f"{case_id}/memo-{datetime.utcnow().strftime('%Y%m%dT%H%M%S')}.json"
-#     _blob_client().get_blob_client(container=container, blob=blob_name).upload_blob(
-#         json.dumps(memo, ensure_ascii=False, indent=2),
-#         overwrite=False,
-#     )
-#
-#     log.info("Persisted assessment: case_id=%s blob=%s", case_id, blob_name)
-#     return func.HttpResponse(
-#         json.dumps({"case_id": case_id, "memo_blob": blob_name}),
-#         status_code=201,
-#         mimetype="application/json",
-#     )
+@app.route(route="persist_assessment", methods=["POST"])
+def persist_assessment(req: func.HttpRequest) -> func.HttpResponse:
+    """Persist an approved Initial Assessment Memo to the `assessments` container.
+
+    Expects the full AssessmentMemo JSON in the body. Refuses to persist unless
+    `approved_by` is set (HITL gate enforcement at the persistence layer).
+    """
+    try:
+        memo = req.get_json()
+    except ValueError:
+        return func.HttpResponse("invalid json", status_code=400)
+
+    if not memo.get("approved_by"):
+        return func.HttpResponse(
+            json.dumps({"error": "memo missing approved_by — HITL gate not satisfied"}),
+            status_code=409,
+            mimetype="application/json",
+        )
+
+    case_id = memo.get("case_id") or str(uuid.uuid4())
+    container = os.environ.get("ASSESSMENTS_CONTAINER", "assessments")
+    blob_name = f"{case_id}/memo-{datetime.utcnow().strftime('%Y%m%dT%H%M%S')}.json"
+    _blob_client().get_blob_client(container=container, blob=blob_name).upload_blob(
+        json.dumps(memo, ensure_ascii=False, indent=2),
+        overwrite=False,
+    )
+
+    log.info("Persisted assessment: case_id=%s blob=%s", case_id, blob_name)
+    return func.HttpResponse(
+        json.dumps({"case_id": case_id, "memo_blob": blob_name}),
+        status_code=201,
+        mimetype="application/json",
+    )
 # --- END persist_assessment ---
 
 
@@ -183,38 +183,38 @@ def log_request(req: func.HttpRequest) -> func.HttpResponse:
 #
 # Uncomment in **Lab 02**. Also uncomment `_queue_client()` above.
 #
-# @app.route(route="notify_reviewer", methods=["POST"])
-# def notify_reviewer(req: func.HttpRequest) -> func.HttpResponse:
-#     """Enqueue a reviewer notification.
-#
-#     Body: { conversation_id, case_id, memo_blob_path, summary, requested_reviewer? }
-#     The reviewer picks this up out-of-band; in the workshop we use
-#     `process_reviewer` (queue trigger below) as the downstream sink.
-#     """
-#     try:
-#         body = req.get_json()
-#     except ValueError:
-#         return func.HttpResponse("invalid json", status_code=400)
-#
-#     payload = {
-#         "conversation_id": body.get("conversation_id"),
-#         "case_id": body.get("case_id"),
-#         "memo_blob_path": body.get("memo_blob_path"),
-#         "drafted_at": body.get("drafted_at") or datetime.utcnow().isoformat() + "Z",
-#         "requested_reviewer": body.get("requested_reviewer"),
-#         "summary": body.get("summary"),
-#     }
-#
-#     queue_name = os.environ.get("REVIEWER_QUEUE_NAME", "reviewer-inbox")
-#     queue = _queue_client().get_queue_client(queue_name)
-#     queue.send_message(json.dumps(payload, ensure_ascii=False))
-#
-#     log.info("Notified reviewer: case_id=%s", payload["case_id"])
-#     return func.HttpResponse(
-#         json.dumps({"queued": True, "queue": queue_name}),
-#         status_code=202,
-#         mimetype="application/json",
-#     )
+@app.route(route="notify_reviewer", methods=["POST"])
+def notify_reviewer(req: func.HttpRequest) -> func.HttpResponse:
+    """Enqueue a reviewer notification.
+
+    Body: { conversation_id, case_id, memo_blob_path, summary, requested_reviewer? }
+    The reviewer picks this up out-of-band; in the workshop we use
+    `process_reviewer` (queue trigger below) as the downstream sink.
+    """
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse("invalid json", status_code=400)
+
+    payload = {
+        "conversation_id": body.get("conversation_id"),
+        "case_id": body.get("case_id"),
+        "memo_blob_path": body.get("memo_blob_path"),
+        "drafted_at": body.get("drafted_at") or datetime.utcnow().isoformat() + "Z",
+        "requested_reviewer": body.get("requested_reviewer"),
+        "summary": body.get("summary"),
+    }
+
+    queue_name = os.environ.get("REVIEWER_QUEUE_NAME", "reviewer-inbox")
+    queue = _queue_client().get_queue_client(queue_name)
+    queue.send_message(json.dumps(payload, ensure_ascii=False))
+
+    log.info("Notified reviewer: case_id=%s", payload["case_id"])
+    return func.HttpResponse(
+        json.dumps({"queued": True, "queue": queue_name}),
+        status_code=202,
+        mimetype="application/json",
+    )
 # --- END notify_reviewer ---
 
 
@@ -226,20 +226,20 @@ def log_request(req: func.HttpRequest) -> func.HttpResponse:
 #
 # Uncomment in **Lab 02**.
 #
-# @app.queue_trigger(
-#     arg_name="msg",
-#     queue_name="%REVIEWER_QUEUE_NAME%",
-#     connection="AzureWebJobsStorage",
-# )
-# def process_reviewer(msg: func.QueueMessage) -> None:
-#     """Demo queue trigger — logs the reviewer notification.
-#
-#     In a real deployment this would send a Teams card or email. For the
-#     workshop we keep it observable via App Insights.
-#     """
-#     try:
-#         payload = json.loads(msg.get_body().decode("utf-8"))
-#     except Exception:
-#         payload = {"raw": msg.get_body().decode("utf-8", errors="replace")}
-#     log.info("Reviewer queue received: %s", json.dumps(payload, ensure_ascii=False))
+@app.queue_trigger(
+    arg_name="msg",
+    queue_name="%REVIEWER_QUEUE_NAME%",
+    connection="AzureWebJobsStorage",
+)
+def process_reviewer(msg: func.QueueMessage) -> None:
+    """Demo queue trigger — logs the reviewer notification.
+
+    In a real deployment this would send a Teams card or email. For the
+    workshop we keep it observable via App Insights.
+    """
+    try:
+        payload = json.loads(msg.get_body().decode("utf-8"))
+    except Exception:
+        payload = {"raw": msg.get_body().decode("utf-8", errors="replace")}
+    log.info("Reviewer queue received: %s", json.dumps(payload, ensure_ascii=False))
 # --- END process_reviewer ---

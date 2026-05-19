@@ -68,7 +68,7 @@ Only these are actively used during Lab 00. The rest become relevant from Lab 01
 2. Create the `noclar-intake` agent in the portal: model `gpt-4.1-mini`, system prompt pasted from [`../src/agents/prompts/intake.md`](../src/agents/prompts/intake.md), no tools yet.
 3. Test it in the Playground — observe a German intake conversation without `log_request`.
 4. Deploy the Functions code with `azd deploy functions` and run the smoke test ([`01-first-agent/smoke-test.ps1`](./01-first-agent/smoke-test.ps1) / [`.sh`](./01-first-agent/smoke-test.sh)) to confirm the round-trip.
-5. Attach `log_request` as an OpenAPI tool on the agent (using [`../src/functions/openapi.yaml`](../src/functions/openapi.yaml) + the function key from `az functionapp keys list`).
+5. Attach `log_request` as an OpenAPI tool on the agent (using [`../src/functions/openapi-intake.json`](../src/functions/openapi-intake.json) + the function key from `az functionapp keys list`).
 6. Re-test in the Playground — observe the tool call.
 7. Open Traces and inspect the run.
 8. Trigger a content-safety guardrail.
@@ -105,7 +105,52 @@ Only these are actively used during Lab 00. The rest become relevant from Lab 01
 
 ---
 
-## Lab 02 — *(to be added)*
+## Lab 02 — Multi-Agent Orchestration & Human-in-the-Loop
+
+**Goal:** A local Python orchestrator built on **Microsoft Agent Framework** (`src/agents/orchestrator.py`) that drives `noclar-intake`, `noclar-legal-classifier`, and `noclar-drafter` as hosted Foundry sub-agents, enforces two HITL gates in your terminal, and persists the final memo via `persist_assessment` — with HITL enforced both in the Python code **and** by the persistence Function (defense in depth).
+
+**What happens:**
+
+1. Uncomment `_queue_client`, `persist_assessment`, `notify_reviewer` (and optionally `process_reviewer`) in [`../src/functions/function_app.py`](../src/functions/function_app.py) and re-deploy with `azd deploy functions`.
+2. Create two more specialist agents in the portal: `noclar-legal-classifier` (prompt from [`legal_classifier.md`](../src/agents/prompts/legal_classifier.md)) and `noclar-drafter` (prompt from [`drafter.md`](../src/agents/prompts/drafter.md)). Both with **Response format = JSON object**.
+3. Create a venv, `pip install -r src/agents/requirements.txt` (pulls in `agent-framework`), populate `.env` with `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`, `AZURE_FUNCTION_APP_HOSTNAME`, `AZURE_FUNCTION_KEY`.
+4. Read [`../src/agents/orchestrator.py`](../src/agents/orchestrator.py) — it's the lab content.
+5. Run `python -m src.agents.orchestrator`. Interactive intake conversation → classifier output → approve in terminal → drafter output → approve in terminal → `persist_assessment` (201) → `notify_reviewer` (202).
+6. Negative path: `python -m src.agents.orchestrator --bypass-hitl`. Script skips both HITL gates and the Function returns **HTTP 409** because `approved_by` is missing.
+7. Inspect Traces — Foundry Tracing records the three hosted-agent runs; the Python orchestrator's spans can be exported via Agent Framework's OpenTelemetry hook (out of scope for this lab).
+
+### Created locally
+
+| Artefact | Path | Notes |
+| --- | --- | --- |
+| `.venv/` | `foundry-workshop/.venv/` | Python venv with Agent Framework + the rest of `src/agents/requirements.txt`. Gitignored. |
+| `.env` | `foundry-workshop/.env` | Adds `AZURE_FUNCTION_KEY` on top of Lab 00 values (the orchestrator needs to call the Functions over HTTPS). Gitignored. |
+
+### Created in Azure
+
+| Resource | Service | State after Lab 02 |
+| --- | --- | --- |
+| `func-<suffix>` | Functions app | Four handlers now active: `log_request`, `persist_assessment`, `notify_reviewer`, `process_reviewer`. |
+| `stg<suffix>/assessments` | Storage blob container | Approved memos appear as `<case_id>/memo-<timestamp>.json`. |
+| `stg<suffix>/reviewer-inbox` | Storage queue | Reviewer notifications enqueued by `notify_reviewer`, drained by `process_reviewer` (logged to App Insights). |
+| `aif-<suffix>/noclar-assessment` | Foundry project | Now contains **3 agents**: `noclar-intake`, `noclar-legal-classifier`, `noclar-drafter`. No orchestrator agent — orchestration runs in your terminal. |
+| `appi-<suffix>` | Application Insights | Traces show the three hosted-agent runs; one 409 trace per `--bypass-hitl` run. |
+
+### Key env vars used
+
+- `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT` (re-used from Lab 00 — Agent Framework's `AzureAIProjectAgentProvider` connects here)
+- `AZURE_FUNCTION_APP_HOSTNAME`, `AZURE_FUNCTION_KEY` (httpx POSTs from `src/agents/tools/functions_tools.py`)
+- `AZURE_FUNCTION_APP_NAME`, `AZURE_RESOURCE_GROUP` (to fetch the function key in step 5)
+- `AZURE_STORAGE_ACCOUNT` (download the persisted memo)
+
+### Done when
+
+- [ ] Two new agents exist in the portal: `noclar-legal-classifier`, `noclar-drafter` (with Response format = JSON object).
+- [ ] `python -m src.agents.orchestrator` ran end-to-end; you approved at HITL #1 and #2 in the terminal; a memo blob exists in `assessments/`.
+- [ ] `python -m src.agents.orchestrator --bypass-hitl` returned 409 from `persist_assessment`.
+- [ ] Traces in the portal show the three sub-agent runs.
+
+---
 
 ## Lab 03 — *(to be added)*
 

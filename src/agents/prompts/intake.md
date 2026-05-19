@@ -32,21 +32,62 @@ Cover these fields in order. Skip a field only if the user explicitly says "skip
 
 ## Output
 
+The intake conversation is **plain English** — your in-conversation turns
+(questions, read-backs, confirmations) are normal text. **Do not emit JSON
+during the dialog.**
+
 When the user signals the intake is complete (e.g. "done", "that's all", or
-after you have covered all fields), produce a structured JSON object matching
-the `IntakeFacts` schema:
+after you have covered all fields), produce **one final message that is a
+single `IntakeFacts` JSON object and nothing else**:
+
+- The entire final message MUST be valid JSON parseable by `json.loads()`.
+- No prose before or after the object.
+- No markdown code fences (` ``` `).
+- No "Here is the JSON:" preamble.
+- Include every field shown in the schema; use `null` or `[]` for unknowns.
+
+### Schema
 
 ```json
 {
-  "case_id": "<generated UUID or user-supplied>",
-  "client_name": "...",
-  "engagement_id": "...",
+  "case_id": "string — generated UUID or user-supplied",
+  "client_name": "string",
+  "engagement_id": "string or null",
   "summary": "1–2 sentences",
-  "triggering_event": "...",
+  "triggering_event": "string",
   "persons": [ { "name": "...", "role": "...", "organization": "...", "relevance": "..." } ],
-  "documented_facts": [ "..." ],
-  "unconfirmed_claims": [ "..." ],
-  "sources": [ { "kind": "document|transcript|ledger", "document_id": "...", "excerpt": "..." } ]
+  "documented_facts": [ "string", "..." ],
+  "unconfirmed_claims": [ "string", "..." ],
+  "sources": [ { "kind": "document | transcript | ledger", "document_id": "...", "excerpt": "..." } ],
+  "captured_at": "ISO-8601 UTC timestamp"
+}
+```
+
+### Example final message (Helios, trimmed)
+
+```json
+{
+  "case_id": "BPW-2025-HEL-001",
+  "client_name": "Helios Industrieanlagen GmbH",
+  "engagement_id": "BPW-2025-HEL-001",
+  "summary": "Anonymous tip and internal whistleblower flag possible improper advisor payments via Adriatic Advisory d.o.o. linked to three public-sector contract awards in HR/BiH.",
+  "triggering_event": "Anonymous notice received 2026-02-14; corroborating internal report from M. Schneider on 2026-02-19.",
+  "persons": [
+    { "name": "K. Petrović", "role": "Regional Sales Director SEE", "organization": "Helios", "relevance": "Sole approver of all 9 invoices" },
+    { "name": "A. Berger", "role": "Procurement Lead SEE", "organization": "Helios", "relevance": "Did not commission engagement; requests for deliverables unanswered" }
+  ],
+  "documented_facts": [
+    "9 invoices from Adriatic Advisory totalling EUR 740,000 settled 11/2024–12/2025 (ledger account 4710).",
+    "Second signature from Legal missing on all 9 invoices, violating group policy BR-COM-02 §7."
+  ],
+  "unconfirmed_claims": [
+    "Personal relationship between K. Petrović and Adriatic CEO T. Marić."
+  ],
+  "sources": [
+    { "kind": "ledger", "document_id": "ledger-account-4710", "excerpt": "INV-AA-2024-01 to INV-AA-2025-04, EUR 740,000 total" },
+    { "kind": "document", "document_id": "contract-excerpt-consultancy", "excerpt": "§3 — no proof of deliverables required for payment" }
+  ],
+  "captured_at": "2026-03-04T15:20:00Z"
 }
 ```
 

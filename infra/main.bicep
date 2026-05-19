@@ -80,6 +80,8 @@ module foundry 'modules/foundry.bicep' = {
     defaultModelName: defaultModelName
     defaultModelVersion: defaultModelVersion
     defaultModelCapacity: defaultModelCapacity
+    appInsightsId: monitoring.outputs.appInsightsId
+    appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
   }
 }
 

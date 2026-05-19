@@ -41,7 +41,8 @@ In the portal:
 4. **Instructions:** open [`../../src/agents/prompts/intake.md`](../../src/agents/prompts/intake.md), copy the whole file content, paste it into the Instructions box.
    - Yes, the prompt mentions a `log_request` tool. The agent will *want* to call it but won't be able to yet. That's intentional — you will see the failure mode in step 3, then fix it in step 6.
 5. Leave **Tools** empty for now.
-6. **Save**.
+6. **Response format:** leave on **Text** (the default). The intake agent is *conversational* — every turn except the final handoff is plain English Q&A, so we cannot force JSON-object mode here without breaking the dialog. The prompt instructs the model to emit a single `IntakeFacts` JSON object only at the final handoff turn (with an explicit worked example). This is the trade-off compared to the classifier and drafter in Lab 02, where decoder-level JSON enforcement *is* possible because those agents only ever produce one response.
+7. **Save**.
 
 You now have one agent. The portal will show it with no tools attached.
 
@@ -77,7 +78,7 @@ For `log_request`, trace the flow in your head from the commented body: validate
 
 **Now enable it.** In `function_app.py`, find the `# --- BEGIN log_request ---` block and remove the leading `# ` from every code line (keep the four header lines as comments). The result should look like a normal Python function with its `@app.route(...)` decorator. Save the file.
 
-> Sanity check: if you run `python -c "import function_app"` from `src/functions/`, it should import without errors. (You don't have to — the deploy will surface any syntax issue too.)
+> Sanity check (optional): `python -m py_compile src/functions/function_app.py` from the workshop root verifies the file still parses — no packages needed. The deploy will surface any deeper issue too.
 
 ## 5. Deploy the Functions code and smoke-test (10 min)
 
@@ -124,17 +125,26 @@ az functionapp keys list --name $(azd env get-value AZURE_FUNCTION_APP_NAME) \
 In the portal:
 
 1. Open the `noclar-intake` agent → **Tools → + Add → OpenAPI 3.0 specified tool**.
-   1. in new foundry: tools section → Add → Browse all tools → 
+   1.1 in new foundry: tools section → Add → Browse all tools → Custom → OpenAPI tool
 2. **Tool name:** `log_request`
-3. **Schema:** open [`../../src/functions/openapi.yaml`](../../src/functions/openapi.yaml), copy the content, paste into the Schema editor.
-4. **Edit the `servers:` block** — replace `REPLACE-WITH-AZURE_FUNCTION_APP_HOSTNAME` with the hostname you fetched above (just the host, no `https://`).
-5. **Authentication:** **API Key**
+3. **Tool description:** `Writes a governance audit log entry to the logs container. MUST be called once at the very start of every conversation, before any substantive question to the user.`
+   - The agent uses this description (not the OpenAPI `description` field) to decide *when* to call the tool. Make it specific about the trigger condition.
+4. **Schema:** open [`../../src/functions/openapi-intake.json`](../../src/functions/openapi-intake.json), copy the content, paste into the Schema editor.
+   - The Foundry portal accepts **JSON only** for OpenAPI specs — not YAML.
+   - This spec exposes only `log_request`. Lab 02's orchestrator uses a separate spec ([`openapi-orchestrator.json`](../../src/functions/openapi-orchestrator.json)) so each agent gets exactly the tools it needs.
+5. **Edit the `servers[0].url`** — replace `REPLACE-WITH-AZURE_FUNCTION_APP_HOSTNAME` with the hostname you fetched above (just the host, no `https://`).
+6. **Authentication:** **API Key**
    - **Auth type:** `header`
    - **Header name:** `x-functions-key`
    - **API key value:** paste the function key from `az functionapp keys list`.
-6. **Create**.
+   6.1 For new portal:
+      - Authentication: Connection → Add a new connection
+      - Key: x-functions-key
+      - Value: paste the function key from `az functionapp keys list`.
+7. **Create**.
 
 You should now see one tool on the agent: `log_request`.
+(feel free to delete the web search tool)
 
 ## 7. Re-test in the Playground (5 min)
 
@@ -189,4 +199,4 @@ Send the agent a clearly inappropriate prompt (e.g. an obviously harassing messa
 
 - Prompt: [`src/agents/prompts/intake.md`](../../src/agents/prompts/intake.md)
 - Function source: [`src/functions/function_app.py`](../../src/functions/function_app.py) → `log_request`
-- Tool schema: [`src/functions/openapi.yaml`](../../src/functions/openapi.yaml)
+- Tool schema: [`src/functions/openapi-intake.json`](../../src/functions/openapi-intake.json)
