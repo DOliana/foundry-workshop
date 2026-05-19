@@ -1,0 +1,42 @@
+[
+  {
+    "query": "Per the consultancy agreement, Adriatic Advisory is remunerated with a monthly retainer of EUR 50,000 and a success fee of what size?",
+    "expected_answer": null,
+    "expected_citation": null,
+    "actual_answer": "The consultancy agreement stipulates that Adriatic Advisory is remunerated with a monthly retainer of EUR 50,000 plus a success fee of 4% of the contract value for any public tender awarded to the client in the specified territories during the term of the agreement【4:0†source】.",
+    "groundedness": 5.0,
+    "relevance": 5.0
+  },
+  {
+    "query": "What requirements does group policy BR-COM-02 §7 impose on consultancy contracts above EUR 100,000?",
+    "expected_answer": null,
+    "expected_citation": null,
+    "actual_answer": "Group policy BR-COM-02 §7 imposes the following requirements on consultancy contracts, particularly for engagements above EUR 100,000:\n\n1. Written third-party due diligence is mandatory, including identity verification, beneficial ownership, and reputational research.\n2. A written contract must be in place, specifying a concrete description of services, market-rate remuneration, reporting obligations, audit rights, and a compliance clause allowing termination if breached.\n3. For contract volumes exceeding EUR 100,000, a second signature from the Legal department is mandatory (the four-eyes principle).\n4. Payments must be made only against documented proof of deliverables such as reports, presentations, or written recommendations; purely oral advisory is insufficient.\n5. Success fees in the public sector require approval by the group management board without exception.\n\nThese requirements ensure transparency, control, and compliance in consultancy engagements above EUR 100,000 under BR-COM-02 policy §7【4:1】【4:2】.",
+    "groundedness": 5.0,
+    "relevance": 5.0
+  },
+  {
+    "query": "What steps does ISA 250 (Revised) require upon an identified or suspected NOCLAR?",
+    "expected_answer": null,
+    "expected_citation": null,
+    "actual_answer": "ISA 250 (Revised) requires the following steps upon identification or suspicion of NOCLAR (Non-Compliance with Laws and Regulations):\n\n1. Obtain an understanding of the nature of the act and the circumstances in which it has occurred.\n2. Obtain further information to evaluate the possible effect on the financial statements.\n3. Discuss the matter with the appropriate level of management and, where appropriate, those charged with governance.\n4. Consider whether legal advice is needed.\n5. Evaluate the implications for the auditor's risk assessment and the reliability of management representations.\n6. Determine whether the auditor has a responsibility to report the identified or suspected non-compliance to parties outside the entity.\n\nAdditionally, the auditor must document:\n- The identified or suspected non-compliance.\n- The results of discussions with management and, where applicable, those charged with governance and other parties outside the entity.\n\nThese requirements apply when the auditor becomes aware of information regarding an instance or suspected instance of non-compliance with laws and regulations in an audit of financial statements.【4:0†source】【4:1†source】.\n\n### Sources:\n- ISA 250 (Revised) paraphrased snippets for workshop documents [4:0], [4:1]",
+    "groundedness": 5.0,
+    "relevance": 5.0
+  },
+  {
+    "query": "Which countries are classified as high-risk (tier 3) in Annex A of the Helios group policy BR-COM-02?",
+    "expected_answer": null,
+    "expected_citation": null,
+    "actual_answer": "According to Annex A of the Helios group policy BR-COM-02, the countries classified as high-risk (tier 3) are:\n\n- Albania\n- Bosnia and Herzegovina\n- Croatia\n- Kosovo\n- Montenegro\n- North Macedonia\n- Serbia\n\nThe application of the enhanced due-diligence process is mandatory for these countries【4:0†source】.\n\nSources:\n- Group policy BR-COM-02 — Anti-Corruption and Gifts (excerpt), Annex A — Risk-Country List (excerpt 2024)【4:0†source】",
+    "groundedness": 5.0,
+    "relevance": 5.0
+  },
+  {
+    "query": "Which German supervisory-duty law is potentially triggered by the missing second signature?",
+    "expected_answer": null,
+    "expected_citation": null,
+    "actual_answer": "The German supervisory-duty law potentially triggered by the missing second signature is related to the internal group policy BR-COM-02 that mandates a \"four-eyes principle\" which requires a second signature from the Legal department for engagements exceeding EUR 100,000. The absence of this second signature could constitute a breach of this internal policy, which is likely grounded in supervisory duties to prevent undue risk or irregularities in contract approvals. \n\nFurthermore, the internal whistleblower's note references a suspicion of improper payments potentially linked to bribery under § 334 StGB (German Criminal Code) concerning bribery in foreign business dealings, which also highlights regulatory oversight duties that may be implicated by missing formal approvals like the second signature.\n\nHence, the missing second signature touches on compliance with the group's anti-corruption and approval policies, which align with supervisory duties under German law aimed at preventing corruption and ensuring proper authorization of contracts and payments【4:1†source】【4:2†source】. \n\nNo direct citation of a specific German supervisory-duty statute was found in the index, but the referenced policy and criminal provisions are indicative of the legal and supervisory framework involved. \n\nSources:\n- Internal whistleblower email suggesting suspicion of bribery (§ 334 StGB)\n- Group policy BR-COM-02 on Anti-Corruption and Gifts, especially the mandatory second signature for contracts > EUR 100,000",
+    "groundedness": 5.0,
+    "relevance": 5.0
+  }
+]

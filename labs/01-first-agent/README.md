@@ -59,7 +59,11 @@ Top-left: the project `noclar-assessment` is selected. Under
 - **Instructions:** paste the contents of
   [`src/agents/prompts/intake.md`](../../src/agents/prompts/intake.md)
   verbatim
-- Leave **Tools** and **Knowledge** empty (delete web search if it is there)
+- **Tools:** **none.** Foundry attaches a default Web Search /
+  Grounding tool to every new agent — **delete it**. JSON-object
+  response mode is incompatible with Web Search; leaving it
+  attached makes the agent return a 400 the moment Lab 02 calls it.
+- **Knowledge:** none
 - **Save**
 
 > **What just happened.** Foundry created a hosted resource you can

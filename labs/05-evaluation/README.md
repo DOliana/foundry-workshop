@@ -1,7 +1,7 @@
 # Lab 05 — Evaluation, Governance & Production Readiness
 
 **Duration:** 50 minutes (Block 5)
-**Outcome:** Participants run the **same evaluation twice — once from
+**Outcome:** Run the **same evaluation twice — once from
 the Foundry portal, once from the Azure AI Evaluation SDK** — against
 the `noclar-grounded` agent from Lab 03, compare the two, walk
 through the day's traces in Application Insights, and close on a
@@ -21,30 +21,33 @@ judge is non-deterministic, so expect ±1 on integer scales).
 
 ---
 
-## 1. Uncomment the per-lab files (5 min)
-
-| File | Purpose |
-|---|---|
-| `src/agents/lab05/run_eval.py` | SDK-driven eval (`GroundednessEvaluator`, `RelevanceEvaluator`). |
-| `data/eval/grounding-citations.jsonl` | 3–5 row dataset with at least one deliberately-hard row. |
+## 1. install the requirements
 
 ```bash
-python -m py_compile src/agents/lab05/run_eval.py
 pip install -r src/agents/lab05/requirements.txt
 ```
 
 ## 2. Run the eval from the portal (15 min — primary)
 
-1. **Evaluation → + New evaluation**.
-2. **Target:** `noclar-grounded` (from Lab 03). The agent is more
+1. **Open** <https://ai.azure.com>
+2. **Evaluations → Create**.
+3. **Target:** `noclar-grounded` (from Lab 03). The agent is more
    interesting than a raw model because its prompt + grounding tool
    both contribute to the score.
-3. **Dataset:** upload `data/eval/grounding-citations.jsonl`.
-4. **Metrics:** **Groundedness**, **Relevance**, **Content Safety**.
-5. **Judge model:** keep the default (`gpt-4.1` or whichever the
-   portal preselects). The judge is independent of the agent under
-   test.
-6. **Run.** Wait ~1–2 min.
+4. **Dataset:** 
+   1. upload `data/eval/grounding-citations.jsonl`.
+   2. name it 'noclar-grounding-citations'
+5. **Field mapping**
+   1. **Judge model:** keep the default (`gpt-4.1` or whichever the portal preselects). The judge is independent of the agent under test.
+   2. Query: `{{item.query}}`
+   3. Response: not available
+   4. Context: `{{item.expected_documents}}`
+   5. Ground truth: `{{item.ground_truth}}`
+   6. Tool calls: not available
+   7. Tool definitions: not available
+6. **Criteria:** **Groundedness**, **Relevance**, **HateAndUnfairness** (remove the agent criteria - the more evaluators the longer it takes...).
+7. **Name:** keep the default 
+8. **Run.** Wait ~1–2 min.
 
 Walk the results:
 

@@ -32,13 +32,13 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 # ---- Blueprint registrations (ship commented; labs uncomment) -------------
 #
 # Lab 02 — multi-agent orchestration + HITL:
-# from . import persist_assessment as _persist_assessment
-# from . import notify_reviewer as _notify_reviewer
-# from . import process_reviewer as _process_reviewer
-# app.register_blueprint(_persist_assessment.bp)
-# app.register_blueprint(_notify_reviewer.bp)
-# app.register_blueprint(_process_reviewer.bp)
+import persist_assessment as _persist_assessment
+import notify_reviewer as _notify_reviewer
+import process_reviewer as _process_reviewer
+app.register_blueprint(_persist_assessment.bp)
+app.register_blueprint(_notify_reviewer.bp)
+app.register_blueprint(_process_reviewer.bp)
 #
 # Lab 04 — Functions as agent tools:
-# from . import log_request as _log_request
-# app.register_blueprint(_log_request.bp)
+import log_request as _log_request
+app.register_blueprint(_log_request.bp)

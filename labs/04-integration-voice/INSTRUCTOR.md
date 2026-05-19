@@ -11,12 +11,13 @@ in the room.
 
 - **Confirm Voice Live SDK regional availability *and* realtime-model
   quota.** The demo uses an end-to-end speech-to-speech model
-  (`gpt-4o-mini-realtime-preview` by default — provisioned by
+  (`gpt-realtime-1.5` by default — provisioned by
   `infra/modules/foundry.bicep`). Without it Voice Live falls back to
   cascaded STT → LLM → TTS, which has ~1–3 s lag and no barge-in. If
   Sweden Central does not currently carry this model, swap the
   `realtimeModelName` param in `main.bicep` to whatever your region
-  does carry (`gpt-realtime`, `gpt-4o-realtime-preview`) or fall back
+  does carry (`gpt-realtime`, `gpt-4o-mini-realtime-preview`,
+  `gpt-4o-realtime-preview`) or fall back
   to West Europe for the Foundry account and cross-region for the
   rest. **No ACS / no phone number** — the demo is purely
   internet-based: laptop microphone → WebSocket → Foundry Voice
@@ -31,43 +32,82 @@ in the room.
 
 ## One-time setup on the demo machine
 
-### Create the `noclar-voice-intake` agent (one-off, before the workshop)
+### Voice agent setup (none required for the slim demo)
 
-The voice demo uses a **separate** agent from the JSON-mode
-`noclar-intake` used in Labs 01/02. Voice needs plain-text,
-conversational replies because the realtime TTS speaks whatever the
-agent emits — JSON-as-audio is unusable.
+The released `azure-ai-voicelive==1.0.0b1` SDK does **not** yet
+support agent-mode — `agent_config` only exists on the master branch
+of the azure-sdk-for-python repo. The slim
+`src/voice/voice_agent_demo.py` therefore bypasses the Foundry agent
+abstraction entirely and talks straight to the realtime deployment,
+loading the same system prompt from
+[`src/agents/prompts/voice_intake.md`](../../src/agents/prompts/voice_intake.md)
+and passing it as `RequestSession.instructions`.
 
-In the Foundry portal, **Build → Agents → + New agent**:
+That means **you do not need to create a `noclar-voice-intake` agent
+in the Foundry portal** for the demo to work. When agent-mode ships
+in the SDK, swap `connect(model=...)` back to
+`connect(agent_config={"agent_name": "noclar-voice-intake", "project_name": ...})`
+and create the agent then.
 
-- **Name:** `noclar-voice-intake`
-- **Model deployment:** the realtime deployment (default
-  `gpt-4o-mini-realtime-preview` — value of
-  `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT`)
-- **Response format:** **Text** (the default — do *not* switch to
-  JSON object)
-- **Instructions:** paste the contents of
-  [`src/agents/prompts/voice_intake.md`](../../src/agents/prompts/voice_intake.md)
-- Tools / Knowledge: (none) — voice scope is intake conversation only
-
-> The voice agent shares no state with `noclar-intake`. That is
-> intentional: when a real product wires voice into the orchestrator,
-> a back-end transcript handler hands the verbatim transcript to
-> `noclar-intake` (JSON mode) for structured extraction. The voice
-> agent's job is just the conversation.
+> The audience-facing pitch ("same agent, different channel") still
+> holds: it's the same prompt and the same realtime deployment that
+> back Lab 02's hosted agent for its chat channel. When a real
+> product wires voice into the orchestrator, a back-end transcript
+> handler hands the verbatim transcript to `noclar-intake` (JSON
+> mode) for structured extraction. The voice loop's job is just the
+> conversation.
 
 ### Demo machine env vars
+
+The voice demo reads its config from `os.environ` (and from a `.env`
+file in the repo root, via `python-dotenv`). If you ran `azd
+provision` inside the devcontainer, the `.azure/` folder is on disk
+and `azd env get-values` works on the host too — no need to re-run
+anything in Azure.
+
+bash:
 
 ```bash
 pip install -r src/voice/requirements.txt
 # Voice Live reuses the Foundry project endpoint — no separate voice
 # resource and no key needed. Auth is via DefaultAzureCredential
 # (your `az login` identity).
-export AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=...    # from `azd env get-values`
-export AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT=... # provisioned by Bicep
-export AZURE_FUNCTION_APP_HOSTNAME=...          # for the log_request call
-export AZURE_FUNCTION_KEY=...
+#
+# Pull every env var azd recorded for this environment in one go:
+azd env get-values > .env
+# …then source it for the current shell (the demo also picks .env up
+# automatically via python-dotenv, so this is only needed if you
+# want them set for ad-hoc CLI commands):
+set -a; source .env; set +a
 ```
+
+PowerShell:
+
+```powershell
+pip install -r src/voice/requirements.txt
+# Voice Live reuses the Foundry project endpoint — no separate voice
+# resource and no key needed. Auth is via DefaultAzureCredential
+# (your `az login` identity).
+#
+# Pull every env var azd recorded for this environment in one go:
+azd env get-values | Out-File -Encoding utf8 .env
+# …then load it into the current PowerShell session (the demo also
+# picks .env up automatically via python-dotenv, so this is only
+# needed if you want them set for ad-hoc CLI commands):
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*([^#=]+?)\s*=\s*"?(.*?)"?\s*$') {
+    [System.Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+  }
+}
+```
+
+The vars the demo actually reads:
+
+- `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT` — Voice Live WS endpoint.
+- `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` — realtime model deployment
+  name (`gpt-realtime-1.5` by default; provisioned by Bicep).
+- `AZURE_FUNCTION_APP_HOSTNAME`, `AZURE_FUNCTION_KEY` — for the
+  governance `log_request` call at session start.
 
 ## Dry-run script (run the day before)
 

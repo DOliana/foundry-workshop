@@ -40,14 +40,26 @@ in the room. Participants only see [`README.md`](./README.md).
 
 ## In the room — once per participant
 
-After each participant gives you their UPN or AAD object id, run:
+If you are the one running `azd provision` (you own the RG), you can
+just self-assign the roles — no UPN needed:
 
 ```powershell
-./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-ab -Principal user@contoso.com
+./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-ab
 ```
 
 ```bash
-./scripts/postdeploy-rbac.sh -g rg-foundry-ab -p user@contoso.com
+./scripts/postdeploy-rbac.sh --rg rg-foundry-ab
+```
+
+When you provision on behalf of someone else, pass their UPN or AAD
+object id:
+
+```powershell
+./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-ab -Principals user@contoso.com
+```
+
+```bash
+./scripts/postdeploy-rbac.sh --rg rg-foundry-ab --principal user@contoso.com
 ```
 
 The script assigns every RG-scoped data-plane role the participant
@@ -72,7 +84,7 @@ These have to be in place before the workshop starts, by someone with
 the relevant subscription rights:
 
 - **Model quota assignment** for `gpt-4.1-mini`,
-  `text-embedding-3-small`, and `gpt-4o-mini-realtime-preview` (or
+  `text-embedding-3-small`, and `gpt-realtime-1.5` (or
   whichever realtime model your region carries) in the workshop
   region.
 - **Resource providers** registered:

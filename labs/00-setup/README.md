@@ -43,7 +43,7 @@ You need (or your instructor needs on your behalf):
   inside the RG (Cognitive Services User on Foundry, Storage Blob
   Data Contributor on the storage account, Search Index Data
   Contributor on AI Search, Monitoring Metrics Publisher on App
-  Insights). The instructor grants these per participant via
+  Insights). The instructor grants these for you via
   [`scripts/postdeploy-rbac.ps1`](../../scripts/postdeploy-rbac.ps1) /
   [`.sh`](../../scripts/postdeploy-rbac.sh) — see
   [`INSTRUCTOR.md`](./INSTRUCTOR.md).
@@ -51,6 +51,14 @@ You need (or your instructor needs on your behalf):
 ---
 
 ## 1. Pre-flight check
+
+> **About code blocks in these labs.** Code blocks are tagged
+> `bash` for syntax highlighting but the commands work
+> **identically in PowerShell** (Windows native) — `az`, `azd`,
+> `python`, `uv`, `git`. Where the syntax actually differs
+> (activating a venv, exporting env vars, line continuations,
+> viewing files), the lab shows **both** a bash and a PowerShell
+> block side-by-side.
 
 PowerShell (Windows) **or** bash (Codespaces / Linux / macOS):
 
@@ -60,6 +68,15 @@ azd version
 python --version
 git --version
 ```
+
+> **About `uv`.** Some labs use `uv pip install -r …` because it is
+> ~10× faster than `pip`. `uv` requires either a venv or write
+> access to the system site-packages — in a devcontainer /
+> Codespaces the non-root user has *neither*, so the labs default
+> to plain `pip` (which falls back to a user install). If you are
+> on Windows native or local Linux/macOS *and* are using a venv,
+> swap `pip` for `uv pip` for the speed-up. To install `uv`:
+> `pip install uv` or `winget install --id=astral-sh.uv`.
 
 If anything is missing, see
 [`../../PARTICIPANT-SETUP.md`](../../PARTICIPANT-SETUP.md).
@@ -97,8 +114,8 @@ The script creates the RG if it does not exist and runs
 `azd env new` + `azd env set AZURE_RESOURCE_GROUP=…` + `azd provision`
 into it. It is idempotent.
 
-> **Why a resource group, not a subscription?** Workshop participants
-> typically don't have subscription-owner permissions. The Bicep in
+> **Why a resource group, not a subscription?** You typically don't
+> have subscription-owner permissions for a workshop. The Bicep in
 > [`infra/main.bicep`](../../infra/main.bicep) targets
 > `resourceGroup` scope so an RG-Contributor can deploy it.
 
@@ -112,7 +129,7 @@ Spot-check that at least these keys exist:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
 - `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-4.1-mini`)
-- `AZURE_FOUNDRY_EMBEDDING_DEPLOYMENT_NAME` (= `text-embedding-3-small`)
+- `AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT` (= `text-embedding-3-small`)
 - `AZURE_AI_FOUNDRY_PORTAL_URL`
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`
 - `AZURE_RESOURCE_GROUP`

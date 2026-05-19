@@ -3,6 +3,10 @@
 # principals (UPN or objectId). Idempotent — safe to re-run.
 #
 # Usage:
+#   # Common case — assigns to *you* (the az-logged-in user). Only --rg required.
+#   ./scripts/postdeploy-rbac.sh --rg rg-foundry-alice
+#
+#   # Multi-principal:
 #   ./scripts/postdeploy-rbac.sh \
 #       --rg rg-foundry-alice \
 #       --principal alice@contoso.com \
@@ -33,13 +37,23 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$RG" || ${#PRINCIPALS[@]} -eq 0 ]]; then
-  echo "Usage: ./scripts/postdeploy-rbac.sh --rg <name> --principal <upn-or-oid> [--principal ...] [--subscription <sub>]" >&2
+if [[ -z "$RG" ]]; then
+  echo "Usage: ./scripts/postdeploy-rbac.sh --rg <name> [--principal <upn-or-oid> ...] [--subscription <sub>]" >&2
   exit 1
 fi
 
 if [[ -n "$SUB" ]]; then
   az account set --subscription "$SUB"
+fi
+
+if [[ ${#PRINCIPALS[@]} -eq 0 ]]; then
+  ME=$(az ad signed-in-user show --query "userPrincipalName" -o tsv 2>/dev/null || true)
+  if [[ -z "$ME" ]]; then
+    echo "No --principal supplied and could not resolve the signed-in user. Run 'az login' first." >&2
+    exit 1
+  fi
+  echo "No --principal supplied; defaulting to signed-in user: $ME"
+  PRINCIPALS=("$ME")
 fi
 
 FOUNDRY=$(az resource list -g "$RG" --resource-type Microsoft.CognitiveServices/accounts --query "[?kind=='AIServices'] | [0].id" -o tsv)

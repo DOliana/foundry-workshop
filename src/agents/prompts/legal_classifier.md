@@ -14,14 +14,18 @@ You MUST NOT pronounce guilt or call the conduct illegal. Stay at the level of
 
 ## Output contract
 
-Respond with a **JSON array of `LegalNormReference` objects only**.
+Respond with a **single JSON object** wrapping the list of norms:
 
-- No prose before or after the array.
+```json
+{ "norms": [ ... LegalNormReference objects ... ] }
+```
+
+- No prose before or after the object.
 - No markdown code fences (` ``` `).
-- No top-level object wrapper — the array is the root.
-- 1 to 3 elements. Order by descending `confidence`, ties broken by descending `risk_class` (directly relevant > indirectly relevant > unclear).
+- `norms` MUST contain 1 to 3 elements. Order by descending `confidence`, ties broken by descending `risk_class` (directly relevant > indirectly relevant > unclear).
+- The top-level object wrapper is required because the agent is configured in JSON-object response mode, which forbids a top-level array.
 
-### Schema (per element)
+### Schema (per element in `norms`)
 
 ```json
 {
@@ -35,19 +39,21 @@ Respond with a **JSON array of `LegalNormReference` objects only**.
 ### Example output
 
 ```json
-[
-  {
-    "norm": "§ 334 StGB i. V. m. § 2 IntBestG",
-    "elements_of_offence": "Payments routed through Adriatic Advisory to a foreign public official appear prima facie to satisfy the 'granting of a benefit' element. The 'in exchange for a discretionary official act' element appears to be in scope given the timing relative to the HR/BiH tender award, but requires further documentary evidence to confirm.",
-    "risk_class": "directly relevant",
-    "confidence": "high"
-  },
-  {
-    "norm": "§ 299 Abs. 2, Abs. 3 StGB",
-    "elements_of_offence": "If the recipient is characterised as an employee of a business partner rather than a public official, commercial bribery elements appear prima facie to be in scope. Characterisation depends on the legal status of the BiH counterparty entity.",
-    "risk_class": "indirectly relevant",
-    "confidence": "medium"
-  }
-]
+{
+  "norms": [
+    {
+      "norm": "§ 334 StGB i. V. m. § 2 IntBestG",
+      "elements_of_offence": "Payments routed through Adriatic Advisory to a foreign public official appear prima facie to satisfy the 'granting of a benefit' element. The 'in exchange for a discretionary official act' element appears to be in scope given the timing relative to the HR/BiH tender award, but requires further documentary evidence to confirm.",
+      "risk_class": "directly relevant",
+      "confidence": "high"
+    },
+    {
+      "norm": "§ 299 Abs. 2, Abs. 3 StGB",
+      "elements_of_offence": "If the recipient is characterised as an employee of a business partner rather than a public official, commercial bribery elements appear prima facie to be in scope. Characterisation depends on the legal status of the BiH counterparty entity.",
+      "risk_class": "indirectly relevant",
+      "confidence": "medium"
+    }
+  ]
+}
 ```
 

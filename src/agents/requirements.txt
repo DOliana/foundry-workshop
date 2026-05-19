@@ -9,6 +9,14 @@ httpx>=0.27,<0.29
 pydantic>=2.11,<3
 python-dotenv>=1.0,<2
 
+# Tracing: ship orchestrator spans to the same App Insights the Function App
+# and the Foundry project already log to, so the whole workflow lights up as
+# one end-to-end transaction.
+# Content Understanding (Lab 03 §8 — extraction handoff).
+azure-ai-contentunderstanding>=1.0.0b1
+azure-monitor-opentelemetry>=1.6,<2
+opentelemetry-instrumentation-httpx>=0.48b0
+
 # Used directly by scripts/seed_foundry_project.py and the helper agents.
 # Version is resolved transitively via azure-ai-projects to stay compatible.
 azure-ai-agents

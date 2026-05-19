@@ -14,6 +14,9 @@ resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
   name: 'srch-${resourceToken}'
   location: location
   tags: tags
+  identity: {
+    type: 'SystemAssigned'
+  }
   sku: {
     name: 'basic'
   }
@@ -37,3 +40,4 @@ resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
 output searchId string = search.id
 output searchName string = search.name
 output searchEndpoint string = 'https://${search.name}.search.windows.net'
+output searchPrincipalId string = search.identity.principalId

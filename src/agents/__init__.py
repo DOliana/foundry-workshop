@@ -1,5 +1,12 @@
 """NOCLAR agent package — built on the Azure AI Foundry Agent Service.
 
+Importing this package eagerly loads `.env` into `os.environ` so that
+every `python -m src.agents.labXX.*` invocation picks up the values
+written by Lab 00 (`azd env get-values > .env`) without the participant
+having to source the file from the shell.
+
+
+
 Per-lab subpackages (each ships fully commented; uncommented by the lab):
 
   * `lab02.orchestrator`         — multi-agent + HITL workflow that
@@ -16,3 +23,7 @@ Instructor-only helpers (kept at package root):
   * `intake_agent` / `grounded_agent` — programmatic agent creation
     scripts used by `scripts/seed_foundry_project.py`.
 """
+
+from src.shared.config import load_env as _load_env
+
+_load_env()

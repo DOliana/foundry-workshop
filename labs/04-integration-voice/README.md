@@ -1,15 +1,15 @@
 # Lab 04 — Voice Interaction & Custom Integration
 
 **Duration:** 60 minutes (Block 4)
-**Outcome:** Participants attach **Azure Functions as agent tools**
+**Outcome:** Attach **Azure Functions as agent tools**
 (the canonical place for this per the agenda), connect the agent to a
 **Microsoft Learn MCP server** to demonstrate dynamic tool discovery,
-write a **small custom function tool** of their own, and then watch
+write a **small custom function tool** of your own, and then watch
 an **instructor-led Voice Live demo** that reuses the same agent over
 voice.
 
-The voice piece is a **demo**, not an individual build. Instructor
-prep is in [`INSTRUCTOR.md`](./INSTRUCTOR.md).
+The voice piece is a **demo**, not an individual build — you watch.
+Instructor prep is in [`INSTRUCTOR.md`](./INSTRUCTOR.md).
 
 ---
 
@@ -114,14 +114,20 @@ Trigger it from the Playground or a Python smoke script.
 > agent, not the JSON-mode `noclar-intake` from Lab 01/02 — the
 > realtime TTS reads whatever the agent emits, and a JSON-emitting
 > agent over voice sounds terrible.
+>
+> **Env:** `_log_request` reads `AZURE_FUNCTION_KEY` from `.env`
+> (auto-loaded on import). The key is appended to `.env` in
+> [Lab 02 §4](../02-orchestration-hitl/README.md#4-set-up-the-venv-and-env-vars-3-min);
+> if you skipped Lab 02, append it now or the governance log call
+> will silently no-op.
 
-Participants watch. The instructor:
+Watch. The instructor:
 
 1. Runs `python -m src.voice.voice_agent_demo`.
 2. Speaks the workshop opening line into the mic.
 3. The voice agent calls `log_request` (channel=`voice`) and
    responds in speech.
-4. Participants see the new trace populate Live Metrics on the
+4. The new trace populates Live Metrics on the
    second screen.
 
 If voice fails (regional outage, network block, microphone), the

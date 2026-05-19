@@ -74,9 +74,26 @@ azd deploy functions
 | Model | `gpt-4.1-mini` | `gpt-4.1-mini` |
 | Response format | **JSON object** | **JSON object** |
 | Instructions | paste [`legal_classifier.md`](../../src/agents/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/agents/prompts/drafter.md) |
-| Tools / Knowledge | (none) | (none) |
+| Tools | **none** — see callout below | **none** — see callout below |
+| Knowledge | none | none |
 
 `noclar-intake` already exists from Lab 01.
+
+> **⚠️ Remove the default Web Search / Grounding tool.** When you
+> create a new agent, Foundry attaches a default grounding tool
+> (Web Search / Bing Search) automatically. **JSON-object response
+> mode is incompatible with Web Search** — the orchestrator will
+> die with:
+>
+> ```
+> openai.BadRequestError: Error code: 400 - {'error': {'message':
+>   'Web Search cannot be used with JSON mode.', ...}}
+> ```
+>
+> Open each of the three agents (`noclar-intake`,
+> `noclar-legal-classifier`, `noclar-drafter`) → **Tools** → delete
+> every entry → **Save**. Specialist agents do not need any tools;
+> the orchestrator is what calls the Functions.
 
 ## 3. Read the orchestrator (5 min)
 
@@ -84,8 +101,9 @@ Open [`src/agents/lab02/orchestrator.py`](../../src/agents/lab02/orchestrator.py
 Spend 5 minutes on it. The file *is* the lab content. Notes:
 
 - `_interactive_intake` — a thin 2-turn driver. Turn 1: client name.
-  Turn 2: paragraph (with `/paste` … `/end` for multi-line). One
-  call to `noclar-intake`, one JSON extracted. The driver prepends
+  Turn 2: tip paragraph — read either from `--tip-file PATH` or
+  from stdin (multi-line; blank line or `.` ends input). One call
+  to `noclar-intake`, one JSON extracted. The driver prepends
   `"Extract the IntakeFacts JSON from the intake below."` to the
   user message — JSON response-format mode requires the literal
   word `json` to appear in the user input.
@@ -100,23 +118,98 @@ Spend 5 minutes on it. The file *is* the lab content. Notes:
 
 ## 4. Set up the venv and env vars (3 min)
 
+**Devcontainer / Codespaces:** skip the venv and use plain `pip` —
+it installs into your user site (`~/.local`) automatically, which
+`uv` does not (`uv pip install --system` tries to write to
+`/usr/local/lib/...` and fails as the non-root container user):
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate          # bash
-# or: .venv\Scripts\Activate.ps1   # PowerShell
 pip install -r src/agents/requirements.txt
 ```
 
-Add the Functions credentials to `.env` (already loaded by the
-shell from Lab 00):
+**Windows native / local Linux / macOS:** use a venv. `uv` works
+here because the venv is writable.
+
+bash:
 
 ```bash
-export AZURE_FUNCTION_KEY=$(az functionapp keys list \
-  -n $AZURE_FUNCTION_APP_NAME -g $AZURE_RESOURCE_GROUP \
-  --query "functionKeys.default" -o tsv)
+python -m venv .venv
+source .venv/bin/activate
+uv pip install -r src/agents/requirements.txt
+# if uv is not available: pip install -r src/agents/requirements.txt
 ```
 
+PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+uv pip install -r src/agents/requirements.txt
+# if uv is not available or you are not using a venv: 
+# pip install -r src/agents/requirements.txt
+```
+
+Smoke check the install:
+
+```bash
+python -c "import agent_framework, azure.ai.projects; print('deps ok')"
+```
+
+The Foundry endpoint and Functions hostname are already in `.env`
+from Lab 00 (`azd env get-values > .env`). Importing `src.agents`
+auto-loads that file via `python-dotenv`, so you do **not** need to
+source `.env` from your shell.
+
+One value is missing from `.env` — the Functions master key, because
+it is not an `azd` output. Append it now:
+
+bash:
+
+```bash
+RG=$(azd env get-value AZURE_RESOURCE_GROUP)
+APP=$(azd env get-value AZURE_FUNCTION_APP_NAME)
+KEY=$(az functionapp keys list -n "$APP" -g "$RG" \
+  --query "functionKeys.default" -o tsv)
+echo "AZURE_FUNCTION_KEY=$KEY" >> .env
+echo "appended AZURE_FUNCTION_KEY=${KEY:0:8}... (masked)"
+```
+
+PowerShell:
+
+```powershell
+$rg  = (azd env get-value AZURE_RESOURCE_GROUP).Trim()
+$app = (azd env get-value AZURE_FUNCTION_APP_NAME).Trim()
+$key = (az functionapp keys list -n $app -g $rg `
+          --query "functionKeys.default" -o tsv).Trim()
+Add-Content -Path .env -Value "AZURE_FUNCTION_KEY=$key"
+Write-Host "appended AZURE_FUNCTION_KEY=$($key.Substring(0,8))... (masked)"
+```
+
+Spot-check `.env` now contains all three vars the orchestrator
+needs: `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`,
+`AZURE_FUNCTION_APP_HOSTNAME`, `AZURE_FUNCTION_KEY`.
+
+> **Why no `export` / `$env:`.** Lab 00 only **writes** `.env`; it
+> never sources the values into your shell. Rather than asking you
+> to source the file (syntax differs across bash / zsh /
+> PowerShell), the lab code auto-loads `.env` on import via
+> `python-dotenv` (see `src/agents/__init__.py`). The same applies
+> to Labs 03, 04, and 05.
+
 ## 5. Happy path (15 min)
+
+The orchestrator can read the tip paragraph from a file (**strongly
+recommended** — the fixture is multi-paragraph markdown and pasting
+into a terminal is fragile) or from stdin.
+
+From a file (recommended):
+
+```bash
+python -m src.agents.lab02.orchestrator --tip-file data/sample-docs/tip.md
+```
+
+Interactive (only for short, single-paragraph tips you type by
+hand):
 
 ```bash
 python -m src.agents.lab02.orchestrator
@@ -125,9 +218,10 @@ python -m src.agents.lab02.orchestrator
 Step through:
 
 1. **Client name:** `Contoso Manufacturing` (or anything).
-2. **Tip paragraph:** type `/paste`, paste the contents of
-   [`data/sample-docs/tip.md`](../../data/sample-docs/tip.md),
-   then `/end`.
+2. **Tip paragraph:** if you used `--tip-file`, this step is
+   skipped. Otherwise type the paragraph and finish with a **blank
+   line** or `.` on its own line. (Pasting the markdown fixture
+   here will fail — use `--tip-file`.)
 3. Agent extracts → prints `IntakeFacts`.
 4. Orchestrator calls the classifier → prints `LegalNormReference[]`.
 5. **HITL #1 — type `approve`.**
@@ -158,16 +252,55 @@ HTTP 409 Conflict
 > approval step by accident. The 409 is a hard backstop — the
 > storage layer refuses what the orchestrator skipped.
 
-## 7. Walk the traces (5 min)
+## 7. Walk the end-to-end trace (5 min)
 
-Foundry → **Tracing → Traces**. The latest happy-path run shows:
+The orchestrator is instrumented with OpenTelemetry and ships spans
+to the App Insights resource that azd provisioned. The Function App
+already auto-emits its requests to the same resource, and the
+Foundry project is connected to the same App Insights via its
+`APPLICATIONINSIGHTS_CONNECTION_STRING` — so a single happy-path run
+shows up as **one** end-to-end transaction with a single
+`operation_Id`:
 
-- one root span for the orchestrator's local Python run
-- three child spans for the hosted sub-agents
-- two Function-tool calls at the end
+```
+noclar.lab02.workflow                (orchestrator root span)
+├─ azure-ai-projects HTTP            (Foundry agent call: noclar-intake)
+├─ azure-ai-projects HTTP            (Foundry agent call: noclar-legal-classifier)
+├─ azure-ai-projects HTTP            (Foundry agent call: noclar-drafter)
+├─ POST /api/persist_assessment      (httpx → Function request span)
+└─ POST /api/notify_reviewer         (httpx → Function request span)
+```
 
-App Insights → **Failures**: the 409 from the bypass run shows up
-here, with the request body in the custom dimensions.
+**Open the App Insights resource** (Azure portal → your resourcegroup →
+your application insights instance → Monitoring → logs): (it might take 1-2 minutes for the function logs to show up as batching occurs during ingestion)
+
+1. Run this Kusto query under **Logs** to find all transactions:
+   ```kusto
+    union requests, dependencies, traces
+    | where timestamp > ago(1h)
+    | summarize min(timestamp) by operation_Id
+    | order by min_timestamp desc 
+   ```
+2. Run this to get the details about the transaction using the first operation_id from the previous query
+   ```kusto
+   union requests, dependencies, traces
+   | where operation_id == "YOUR OPERATION ID"
+   | project timestamp, itemType, name, operation_Name, operation_Id, duration, resultCode
+   | order by timestamp asc
+   ```
+
+**Foundry per-agent traces.** Foundry also keeps a per-agent view
+at **Agents → `<agent-name>` → Traces**. That view is scoped to one
+agent and is useful for inspecting the system prompt and the JSON
+the model returned for a specific run. Use App Insights for the
+end-to-end picture, the Foundry view for prompt-level debugging.
+
+**The negative path.** Rerun with `--bypass-hitl`. The same view
+shows the 409 — `persist_assessment` is red,
+`POST /api/notify_reviewer` is missing (the orchestrator aborts on
+the 409), and the request body in custom dimensions confirms
+`approved_by` was empty. **App Insights → Failures** picks the same
+row up under HTTP 409.
 
 ---
 
@@ -180,7 +313,9 @@ here, with the request body in the custom dimensions.
 - [ ] Happy path ran end-to-end; a memo blob with `approved_by` set
       is in `assessments/`.
 - [ ] `--bypass-hitl` returned **HTTP 409**.
-- [ ] You opened one Trace and one Failure in App Insights.
+- [ ] One end-to-end transaction in App Insights shows the
+      orchestrator root, three Foundry agent calls, and two Function
+      request spans under a single `operation_Id`.
 
 ## Discussion (5 min)
 

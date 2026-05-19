@@ -11,13 +11,25 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 
-def _maybe_load_dotenv() -> None:
+def load_env() -> None:
+    """Best-effort load of `.env` into `os.environ`.
+
+    Lab 00 writes `.env` via `azd env get-values > .env` but never sources
+    it. Every lab entrypoint calls this (directly or transitively via
+    `src/agents/__init__.py`) so the file is picked up automatically. Safe
+    to call repeatedly; `load_dotenv()` is idempotent and a no-op when no
+    `.env` is present.
+    """
     try:
         from dotenv import load_dotenv  # type: ignore
 
         load_dotenv()
     except ImportError:
         pass
+
+
+# Backwards-compatible alias.
+_maybe_load_dotenv = load_env
 
 
 @dataclass(frozen=True)
@@ -39,7 +51,7 @@ class Settings:
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    _maybe_load_dotenv()
+    load_env()
 
     def _required(name: str) -> str:
         v = os.environ.get(name)

@@ -1,8 +1,8 @@
 # Lab 03 — hybrid retrieval ingest + grounded query.
 # Extends the base src/agents/requirements.txt with the embedding client.
-azure-search-documents>=11.5,<12
+azure-search-documents>=11.6.0,<12
 azure-identity>=1.19,<2
-openai>=1.40,<2
+openai>=2.0,<3
 PyYAML>=6,<7
 agent-framework>=1.0.0,<2.0
 azure-ai-projects>=2.1.0,<3.0

@@ -22,7 +22,7 @@ auditable trail.
 Each lab starts with **"uncomment these files"** — the per-lab Python
 and Azure Functions code ships fully commented in this repo. You read
 the file, then uncomment it, then run it. The first thing that ever
-hits a deployed resource is the participant doing it themselves.
+hits a deployed resource is you doing it yourself.
 
 ## Instructor docs
 

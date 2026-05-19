@@ -125,6 +125,8 @@ module rbac 'modules/rbac.bicep' = {
     principalId: principalId
     functionsPrincipalId: functions.outputs.functionAppPrincipalId
     foundryPrincipalId: foundry.outputs.foundryPrincipalId
+    foundryProjectPrincipalId: foundry.outputs.projectPrincipalId
+    searchPrincipalId: search.outputs.searchPrincipalId
     foundryName: foundry.outputs.foundryName
     searchName: search.outputs.searchName
     storageName: storage.outputs.storageName

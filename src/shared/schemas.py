@@ -85,8 +85,8 @@ class MaterialityAssessment(BaseModel):
 
 
 class Escalation(BaseModel):
-    recipient: str
-    function: str
+    recipient: str | None = None
+    function: str | None = None
     informed_on: str | None = None
     form: str | None = None
 
@@ -97,7 +97,7 @@ class AssessmentMemo(BaseModel):
     case_id: str
     memo_version: str = "1.0"
     drafted_at: datetime = Field(default_factory=datetime.utcnow)
-    header: dict[str, str]
+    header: dict[str, str | None]
     intake: IntakeFacts
     legal_assessment: list[LegalNormReference]
     materiality: MaterialityAssessment
