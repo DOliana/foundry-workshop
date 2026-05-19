@@ -1,15 +1,18 @@
 """Idempotent provisioning of the Foundry project for the workshop.
 
-Run AFTER `azd up`. Reads endpoint + names from `azd env get-values`.
+**Instructor-only helper.** Pre-warms an RG so the participant's lab
+flow skips waiting on the per-lab ingest. In the workshop the
+participants run their own per-lab scripts:
 
-What it does:
-  1. Uploads the sample-docs folder to the `sample-docs` blob container.
-  2. Creates an Azure AI Search index `noclar-corpus` and ingests sample-docs.
-  3. Creates a Foundry project connection to that Search index.
-  4. Registers the five workshop agents (intake, grounded, legal_classifier,
-     drafter, orchestrator) with their prompts and tools.
+  - Lab 02 creates the specialist agents in the portal.
+  - Lab 03 runs `python -m src.agents.lab03.ingest_corpus` against
+    the Search service.
 
-Safe to re-run; existing resources are detected and updated.
+This script is retained as a "do everything at once" shortcut for
+instructor dry-runs or pre-warming N RGs in parallel.
+
+Run AFTER `azd provision`. Reads endpoint + names from
+`azd env get-values`.
 """
 
 from __future__ import annotations

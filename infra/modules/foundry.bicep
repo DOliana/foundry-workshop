@@ -24,6 +24,24 @@ param defaultModelVersion string = '2025-04-16'
 @description('TPM capacity for default model deployment (in thousands). Keep modest to leave room for manual deploys in Lab 1.')
 param defaultModelCapacity int = 20
 
+@description('Embedding model name (used by Lab 03 hybrid retrieval).')
+param embeddingModelName string = 'text-embedding-3-small'
+
+@description('Embedding model version.')
+param embeddingModelVersion string = '1'
+
+@description('TPM capacity for the embedding model deployment (in thousands).')
+param embeddingModelCapacity int = 30
+
+@description('Realtime speech-to-speech model used by Lab 04 Voice Live demo. Deployed in the same Foundry account; reached via the project endpoint over WSS. Swap if your region does not carry this model — `gpt-realtime` and `gpt-4o-realtime-preview` are the other common choices.')
+param realtimeModelName string = 'gpt-realtime-1.5'
+
+@description('Realtime model version.')
+param realtimeModelVersion string = '2026-02-23'
+
+@description('TPM capacity for the realtime model deployment (in thousands). One concurrent voice session is enough for the instructor demo.')
+param realtimeModelCapacity int = 10
+
 @description('Resource ID of the Application Insights instance to connect to the project (so agent traces show up in Foundry Tracing).')
 param appInsightsId string
 
@@ -83,6 +101,51 @@ resource defaultModelDeployment 'Microsoft.CognitiveServices/accounts/deployment
   }
 }
 
+// Embedding model — used by Lab 03 to build the hybrid retrieval index over
+// the sample-doc corpus. The embedding endpoint is reached via the same
+// Foundry project endpoint as the chat model.
+resource embeddingModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = {
+  parent: foundry
+  name: embeddingModelName
+  sku: {
+    name: 'GlobalStandard'
+    capacity: embeddingModelCapacity
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: embeddingModelName
+      version: embeddingModelVersion
+    }
+  }
+  dependsOn: [
+    defaultModelDeployment
+  ]
+}
+
+// Realtime speech-to-speech model — used by the Lab 04 Voice Live demo. The
+// participant-facing flow is text; only the instructor's voice demo touches
+// this deployment. We size it for a single concurrent session.
+resource realtimeModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = {
+  parent: foundry
+  name: realtimeModelName
+  sku: {
+    name: 'GlobalStandard'
+    capacity: realtimeModelCapacity
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: realtimeModelName
+      version: realtimeModelVersion
+    }
+    raiPolicyName: 'Microsoft.DefaultV2'
+  }
+  dependsOn: [
+    embeddingModelDeployment
+  ]
+}
+
 // Connect Application Insights to the Foundry project so agent runs, tool
 // calls, and LLM spans appear in the portal's Tracing view (used in Lab 01).
 #disable-next-line BCP037
@@ -113,3 +176,5 @@ output projectId string = foundryProject.id
 output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/api/projects/${foundryProject.name}'
 output projectPrincipalId string = foundryProject.identity.principalId
 output defaultModelDeploymentName string = defaultModelDeployment.name
+output embeddingModelDeploymentName string = embeddingModelDeployment.name
+output realtimeModelDeploymentName string = realtimeModelDeployment.name

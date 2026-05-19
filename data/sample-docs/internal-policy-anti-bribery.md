@@ -1,9 +1,10 @@
 ---
-type: internal-policy-excerpt
-issuer: Helios Industrieanlagen GmbH — group policy BR-COM-02
-version: 4.2
-effective: 2024-01-01
+document_id: internal-policy-anti-bribery
+document_type: policy
 language: en
+jurisdiction: global
+effective_date: 2024-01-01
+title: Group policy BR-COM-02 — Anti-Corruption and Gifts (excerpt)
 ---
 
 # Group policy BR-COM-02 — Anti-Corruption and Gifts (excerpt)

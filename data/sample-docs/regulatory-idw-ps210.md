@@ -1,8 +1,10 @@
 ---
-type: regulatory-guidance-snippet
-source: simplified paraphrase of IDW PS 210 — for workshop purposes only
-note: This is NOT the official wording. Do not cite in real engagement work.
+document_id: regulatory-idw-ps210
+document_type: regulation
 language: en
+jurisdiction: DE
+effective_date: 2020-06-30
+title: IDW PS 210 — paraphrased excerpt for the workshop
 ---
 
 # IDW PS 210 — paraphrased excerpt for the workshop

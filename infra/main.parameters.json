@@ -19,6 +19,15 @@
     },
     "defaultModelVersion": {
       "value": "${DEFAULT_MODEL_VERSION=2025-04-14}"
+    },
+    "embeddingModelName": {
+      "value": "${EMBEDDING_MODEL_NAME=text-embedding-3-small}"
+    },
+    "embeddingModelVersion": {
+      "value": "${EMBEDDING_MODEL_VERSION=1}"
+    },
+    "embeddingModelCapacity": {
+      "value": "${EMBEDDING_MODEL_CAPACITY=30}"
     }
   }
 }

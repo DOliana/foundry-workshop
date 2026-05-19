@@ -1,11 +1,10 @@
 ---
-type: witness-statement
-interviewer: Dr. Lena Hartmann (Engagement Partner, Beispiel & Partner WPG)
-interviewee: Ms. Anna Berger, Procurement Lead SEE, Helios Industrieanlagen GmbH
-date: 2026-03-04T10:00:00+01:00
-location: Helios conference room 3.04, Stuttgart
+document_id: witness-statement-procurement-lead
+document_type: witness-statement
 language: en
-present: Hartmann (auditor), Berger (witness), Dr. Bauer (Compliance, observing)
+jurisdiction: DE
+effective_date: 2026-03-04
+title: File note — Witness interview A. Berger (Procurement Lead SEE)
 ---
 
 # File note — Witness interview A. Berger

@@ -1,8 +1,10 @@
 ---
-type: regulatory-guidance-snippet
-source: simplified paraphrase of ISA 250 (Revised) — for workshop use only
-note: This is NOT the official text. Do not cite in real work.
+document_id: regulatory-isa250
+document_type: regulation
 language: en
+jurisdiction: global
+effective_date: 2017-12-15
+title: ISA 250 (Revised) — paraphrased snippet for workshop
 ---
 
 # ISA 250 (Revised) — paraphrased snippet for workshop

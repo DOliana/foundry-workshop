@@ -54,18 +54,28 @@ class NextStep(BaseModel):
 
 
 class IntakeFacts(BaseModel):
-    """Structured facts extracted from intake documents / conversation."""
+    """Structured facts extracted from intake conversation.
 
-    case_id: str
+    Simplified contract: the user types `client_name` and pastes a one-paragraph
+    `tip`. Everything else is either *derived by the intake agent* from the tip
+    text, or left empty / null and populated downstream by the drafter /
+    classifier. All optional fields default to empty / None so the agent can
+    omit them in the simplified flow without validation errors.
+    """
+
     client_name: str
+    tip: str = ""
+    case_id: str | None = None
     engagement_id: str | None = None
-    summary: str
-    triggering_event: str
+    summary: str = ""
+    triggering_event: str = ""
     persons: list[Person] = Field(default_factory=list)
     documented_facts: list[str] = Field(default_factory=list)
     unconfirmed_claims: list[str] = Field(default_factory=list)
     sources: list[SourceReference] = Field(default_factory=list)
     captured_at: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = {"extra": "allow"}
 
 
 class MaterialityAssessment(BaseModel):

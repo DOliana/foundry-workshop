@@ -63,7 +63,7 @@
           "user_principal": {
             "type": "string",
             "nullable": true,
-            "description": "AAD UPN of the engagement team member, if known."
+            "description": "AAD UPN of the assurance / compliance team member, if known."
           },
           "started_at": {
             "type": "string",

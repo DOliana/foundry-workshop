@@ -1,6 +1,6 @@
 # Azure AI Foundry — Hands-On Workshop
 
-A hands-on workshop exploring the core capabilities of **Azure AI Foundry** through a realistic forensics scenario: building an AI-assisted document intake and assessment workflow.
+A hands-on workshop exploring the core capabilities of **Azure AI Foundry** through a realistic assurance / compliance scenario: building an AI-assisted document intake and assessment workflow.
 
 > The scenario (a compliance intake process) is the vehicle — the goal is hands-on experience with the platform capabilities: multi-agent orchestration, document grounding, voice interaction, custom integration, and evaluation.
 
@@ -57,11 +57,18 @@ See [`PARTICIPANT-SETUP.md`](PARTICIPANT-SETUP.md) for the 1-page quickstart.
 
 ## Deploy the infrastructure
 
+The Bicep targets a **resource group** (not a subscription). Pre-create
+the RG, then provision into it:
+
 ```bash
 azd auth login
-azd env new noclar-<yourinitials>
-azd up
+./scripts/provision-rg.sh -g rg-foundry-<yourinitials> -l swedencentral
+# or, on Windows:
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<yourinitials> -Location swedencentral
 ```
+
+The instructor then grants per-participant data-plane roles inside
+the RG with [`scripts/postdeploy-rbac.{ps1,sh}`](scripts/postdeploy-rbac.ps1).
 
 This provisions, in **Sweden Central**:
 
@@ -69,7 +76,8 @@ This provisions, in **Sweden Central**:
 |---|---|
 | Azure AI Foundry account + project | The hub for all agent work |
 | `gpt-4.1-mini` model deployment | Default chat model (TPM capped to leave room for your own deploys) |
-| Azure AI Search (Basic) | Knowledge base behind Foundry IQ |
+| `text-embedding-3-small` model deployment | Embedding model for the Lab 03 hybrid index |
+| Azure AI Search (Basic) | Hybrid (vector + keyword + filter) knowledge base |
 | Storage Account | Sample docs, assessment outputs, function state |
 | Azure Functions (Flex, Python 3.11) | Persistence + governance logging + reviewer routing |
 | Azure Communication Services | Voice Live SDK demo |

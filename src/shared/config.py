@@ -33,7 +33,8 @@ class Settings:
     sample_docs_container: str
     reviewer_queue_name: str
     appinsights_connection_string: str | None
-    acs_endpoint: str | None
+    foundry_embedding_deployment: str | None
+    foundry_realtime_deployment: str | None
 
 
 @lru_cache(maxsize=1)
@@ -60,5 +61,6 @@ def get_settings() -> Settings:
         sample_docs_container=os.environ.get("SAMPLE_DOCS_CONTAINER", "sample-docs"),
         reviewer_queue_name=os.environ.get("REVIEWER_QUEUE_NAME", "reviewer-inbox"),
         appinsights_connection_string=os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING"),
-        acs_endpoint=os.environ.get("AZURE_COMMUNICATION_SERVICES_ENDPOINT"),
+        foundry_embedding_deployment=os.environ.get("AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT"),
+        foundry_realtime_deployment=os.environ.get("AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT"),
     )

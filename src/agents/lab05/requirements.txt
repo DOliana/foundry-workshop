@@ -1,0 +1,5 @@
+# Lab 05 — SDK eval against noclar-grounded.
+azure-ai-evaluation>=1.0,<2
+agent-framework>=1.0.0,<2.0
+azure-ai-projects>=2.1.0,<3.0
+azure-identity>=1.19,<2

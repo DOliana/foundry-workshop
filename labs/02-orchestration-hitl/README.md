@@ -1,279 +1,191 @@
 # Lab 02 — Multi-Agent Orchestration & Human-in-the-Loop
 
-**Block 2 · 60 min**
-**Outcome:** A local Python orchestrator (built on **Microsoft Agent Framework**) that drives `noclar-intake`, `noclar-legal-classifier`, and `noclar-drafter` as hosted Foundry sub-agents, enforces two HITL checkpoints in your terminal, and persists the final memo via `persist_assessment` — with the persistence Function refusing any memo that bypasses the human gate.
+**Duration:** 60 minutes (Block 2)
+**Outcome:** A **local Python orchestrator** (Microsoft Agent
+Framework) drives three hosted Foundry sub-agents — `noclar-intake`,
+`noclar-legal-classifier`, `noclar-drafter` — through a **2-turn
+intake**, two HITL approvals in your terminal, and a final
+persistence call. When the HITL gate is bypassed, the persistence
+Function returns **HTTP 409** — defense in depth.
 
 ---
 
-## What you do here and why
+## What is happening and why
 
-In Lab 01 you built one agent with one tool. The real NOCLAR workflow is a **multi-step pipeline with two mandatory human approvals**:
-
-1. **HITL #1** — confirm the legal classification before drafting.
-2. **HITL #2** — approve the drafted memo before it is persisted.
-
-This lab introduces three new things:
-
-- **Two more Functions** (`persist_assessment`, `notify_reviewer`) — including the persistence-layer **HITL gate** (Function returns `409` if `approved_by` is missing). This is defense in depth: even if the orchestrator skips the prompt, the storage layer refuses.
-- **Two more specialist agents** (`noclar-legal-classifier`, `noclar-drafter`) — created in the Foundry portal the same way as the intake agent in Lab 01.
-- **Microsoft Agent Framework** — a Python orchestration library that fetches your hosted Foundry agents by name and drives them with deterministic Python code. The specialist agents stay in the portal so the prompt team can iterate on them; the *workflow* lives in [`../../src/agents/orchestrator.py`](../../src/agents/orchestrator.py) where it can be unit-tested and traced.
-
-The HITL prompts happen **in your terminal**: the script prints the classification (or memo) and you type `approve` / a rejection reason. No webhook, no Teams card — the workshop-grade UX is stdin. The shape is identical to what you'd ship: in production the stdin prompts become Teams adaptive cards or web modals, and the script becomes a Durable Function, but the orchestrator code looks the same.
-
----
-
-## 1. Enable the new Function handlers (5 min)
-
-Open [`../../src/functions/function_app.py`](../../src/functions/function_app.py). Three blocks need to come alive for this lab. For each, remove the leading `# ` from every code line in the block (keep the comment header lines as comments):
-
-| Block | Why |
-| --- | --- |
-| `# --- BEGIN _queue_client ---` | The shared queue client used by `notify_reviewer`. |
-| `# --- BEGIN persist_assessment ---` | Writes the approved memo to the `assessments` container. Enforces the `approved_by` gate. |
-| `# --- BEGIN notify_reviewer ---` | Enqueues a reviewer notification on `reviewer-inbox`. |
-
-Optional: also uncomment `# --- BEGIN process_reviewer ---` — it's a queue-trigger handler that simply logs notifications to App Insights so you can see them in Traces. Not called by any agent; runs automatically when `notify_reviewer` writes a message.
-
-Save the file. Quick sanity check (pure syntax check — no packages required):
-
-```bash
-python -m py_compile src/functions/function_app.py
+```
+   you ─type─► orchestrator ─►  noclar-intake          (hosted agent)
+                              ─►  noclar-legal-classifier (hosted agent)
+                              ─►  HITL #1 in terminal
+                              ─►  noclar-drafter        (hosted agent)
+                              ─►  HITL #2 in terminal
+                              ─►  persist_assessment    (Azure Function)
+                              ─►  notify_reviewer       (Azure Function)
+                              ─►  reviewer-inbox queue
+                              ─►  process_reviewer      (queue-trigger Function)
 ```
 
-No output = good. (If you have a venv with the Function App's `requirements.txt` installed you can also run `python -c "import function_app"` from `src/functions/`, but `azd deploy functions` will surface any real import error anyway.)
+The orchestrator is **deterministic Python**, not an LLM. It picks
+when to call which sub-agent, when to ask the human, and when to
+call the Functions. The agents only contribute language work
+(extract / classify / draft).
 
-## 2. Re-deploy the Functions code (3 min)
+The **negative path** demonstrates that even if the orchestrator
+"forgets" the HITL gate, the storage layer still refuses to persist
+an unapproved memo. The two gates are independent.
+
+---
+
+## 1. Uncomment the per-lab files (5 min)
+
+These files ship as `# `-prefixed comments. Read each one, then
+uncomment.
+
+| File | Purpose |
+|---|---|
+| `src/functions/persist_assessment.py` | Function: persist approved memo (rejects if not approved). |
+| `src/functions/notify_reviewer.py` | Function: enqueue reviewer notification. |
+| `src/functions/process_reviewer.py` | Queue-trigger Function (optional). |
+| `src/functions/function_app.py` | Uncomment the **two `app.register_blueprint(...)` lines** for Lab 02. |
+| `src/agents/lab02/orchestrator.py` | The Python orchestrator. |
+| `src/agents/lab02/functions_tools.py` | httpx wrappers around the Functions HTTP endpoints. |
+
+In VS Code: select the commented block, **Ctrl+/** (toggle line
+comment) flips the whole block in one shot.
+
+Compile-check then deploy the Functions code:
 
 ```bash
+python -m py_compile src/functions/*.py src/agents/lab02/*.py
 azd deploy functions
 ```
 
-Same command you ran in Lab 01. This re-packages [`src/functions/`](../../src/functions/) with the now-uncommented handlers and pushes it. Expect ~2 min.
+> **What just happened.** `azd deploy functions` packaged the three
+> blueprints, pushed them to `func-<suffix>`, and the Functions
+> runtime registered the routes. Browse to the Functions app in the
+> portal — under **Functions** you should see `persist_assessment`,
+> `notify_reviewer`, `process_reviewer`.
 
-After it finishes, verify the new endpoints exist.
+## 2. Create the two specialist agents in the portal (5 min)
 
-PowerShell:
+**Build → Agents → + New agent**, twice:
 
-```powershell
-$func = (azd env get-value AZURE_FUNCTION_APP_NAME).Trim()
-$rg   = (azd env get-value AZURE_RESOURCE_GROUP).Trim()
-az functionapp function list --name $func --resource-group $rg --query "[].name" -o tsv
-```
+| Field | `noclar-legal-classifier` | `noclar-drafter` |
+|---|---|---|
+| Model | `gpt-4.1-mini` | `gpt-4.1-mini` |
+| Response format | **JSON object** | **JSON object** |
+| Instructions | paste [`legal_classifier.md`](../../src/agents/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/agents/prompts/drafter.md) |
+| Tools / Knowledge | (none) | (none) |
 
-bash / zsh:
+`noclar-intake` already exists from Lab 01.
+
+## 3. Read the orchestrator (5 min)
+
+Open [`src/agents/lab02/orchestrator.py`](../../src/agents/lab02/orchestrator.py).
+Spend 5 minutes on it. The file *is* the lab content. Notes:
+
+- `_interactive_intake` — a thin 2-turn driver. Turn 1: client name.
+  Turn 2: paragraph (with `/paste` … `/end` for multi-line). One
+  call to `noclar-intake`, one JSON extracted. The driver prepends
+  `"Extract the IntakeFacts JSON from the intake below."` to the
+  user message — JSON response-format mode requires the literal
+  word `json` to appear in the user input.
+- `_call_specialist_json` — runs a sub-agent. Wraps the payload in a
+  short natural-language preamble that mentions `json` (same reason
+  as above), strips the optional ```` ```json ```` fence, parses.
+- `_approve_in_terminal` — the HITL gate. Type `approve` to
+  continue, anything else to abort.
+- `run_workflow` — the whole pipeline. The `--bypass-hitl` branch
+  skips both gates **and** does not set `approved_by` on the memo,
+  which is what triggers the 409 from `persist_assessment`.
+
+## 4. Set up the venv and env vars (3 min)
 
 ```bash
-func=$(azd env get-value AZURE_FUNCTION_APP_NAME)
-rg=$(azd env get-value AZURE_RESOURCE_GROUP)
-az functionapp function list --name "$func" --resource-group "$rg" --query "[].name" -o tsv
-```
-
-You should see **four** entries: `log_request`, `persist_assessment`, `notify_reviewer`, `process_reviewer` (the last only if you uncommented it).
-
-## 3. Create the `noclar-legal-classifier` agent (5 min)
-
-In the Foundry portal (same project from Lab 00 — use `azd env get-value AZURE_AI_FOUNDRY_PORTAL_URL` if you've lost the tab):
-
-1. **Build → Agents → + New agent**.
-2. **Name:** `noclar-legal-classifier`
-3. **Deployment:** `gpt-4.1-mini`
-4. **Instructions:** paste the contents of [`../../src/agents/prompts/legal_classifier.md`](../../src/agents/prompts/legal_classifier.md).
-5. Leave **Tools** empty (delete web search).
-6. **Response format:** set to **JSON object** (in the agent's *Output* / *Response format* settings). Together with the prompt's explicit JSON example, this guarantees the orchestrator can parse the classifier's output without "explanation prose plus a code fence" surprises.
-7. **Save**.
-
-This agent has no tools — it's a pure JSON-shaped classifier. Output is an array of `LegalNormReference` objects (statute, elements of offence, risk class, confidence).
-
-> **Two layers of JSON enforcement.** The prompt contains a worked example (cheap, improves first-token routing). The *Response format* toggle constrains the decoder (guarantees valid JSON regardless of prompt drift). Use both whenever a sub-agent's output is consumed by another agent or by code. If your Foundry build supports **JSON schema** (strict mode) in addition to plain **JSON object**, prefer schema mode and paste the per-element schema from the classifier prompt — but plain JSON object is enough for the workshop.
-
-## 4. Create the `noclar-drafter` agent (5 min)
-
-Same flow:
-
-1. **+ New agent**.
-2. **Name:** `noclar-drafter`
-3. **Deployment:** `gpt-4.1-mini`
-4. **Instructions:** paste [`../../src/agents/prompts/drafter.md`](../../src/agents/prompts/drafter.md).
-5. Leave **Tools** empty.
-6. **Response format:** **JSON object** (same toggle as the classifier in step 3). The drafter's output is the largest and most nested of the three sub-agents (`AssessmentMemo` has ~10 top-level fields including a nested `IntakeFacts` and an array of legal norms), so enforcing valid JSON at decode time is critical — the `persist_assessment` Function will reject anything it can't parse, and you don't want to discover a stray markdown fence at HITL #2.
-7. **Save**.
-
-Also tool-less — pure text/JSON generation following the memo template at [`../../data/memo-template/template.md`](../../data/memo-template/template.md).
-
-> **Workshop vs production.** This drafter prompt is deliberately LLM-heavy so you can read it end-to-end. In a real product you would: (1) inject the memo template as File Search context instead of referencing it by path, (2) ground IDW PS 210 / ISA 250 paragraphs via Azure AI Search instead of relying on training knowledge (Lab 03), (3) move deterministic rules out of the prompt — e.g. escalation list computed from `materiality_judgement` in `persist_assessment`, not by the LLM, (4) switch Response format from *JSON object* to **JSON schema (strict)** using the Pydantic-generated schema, (5) add evaluators for forbidden language and hallucinated persons/sums (Lab 05), and (6) deploy the prompt as code via SDK/Bicep with golden-set regression tests. The current prompt is fine for a 60-minute lab; do not ship it to a partner.
-
-## 5. Install the orchestrator and set up `.env` (5 min)
-
-This lab's orchestrator is a local Python script at [`../../src/agents/orchestrator.py`](../../src/agents/orchestrator.py) built on **Microsoft Agent Framework**. It resolves the three hosted agents you just created by name and drives them with plain Python.
-
-From the repo root (`foundry-workshop/`):
-
-PowerShell:
-
-```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+source .venv/bin/activate          # bash
+# or: .venv\Scripts\Activate.ps1   # PowerShell
 pip install -r src/agents/requirements.txt
 ```
 
-bash / zsh:
+Add the Functions credentials to `.env` (already loaded by the
+shell from Lab 00):
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-uv pip install -r src/agents/requirements.txt
+export AZURE_FUNCTION_KEY=$(az functionapp keys list \
+  -n $AZURE_FUNCTION_APP_NAME -g $AZURE_RESOURCE_GROUP \
+  --query "functionKeys.default" -o tsv)
 ```
 
-Now create a `.env` at the repo root with the three values the orchestrator needs. PowerShell one-liner:
-
-```powershell
-@"
-AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=$((azd env get-value AZURE_AI_FOUNDRY_PROJECT_ENDPOINT).Trim())
-AZURE_FUNCTION_APP_HOSTNAME=$((azd env get-value AZURE_FUNCTION_APP_HOSTNAME).Trim())
-AZURE_FUNCTION_KEY=$(az functionapp keys list --name (azd env get-value AZURE_FUNCTION_APP_NAME).Trim() --resource-group (azd env get-value AZURE_RESOURCE_GROUP).Trim() --query masterKey -o tsv)
-"@ | Out-File -Encoding ascii .env
-```
-
-bash / zsh:
+## 5. Happy path (15 min)
 
 ```bash
-cat > .env <<EOF
-AZURE_AI_FOUNDRY_PROJECT_ENDPOINT=$(azd env get-value AZURE_AI_FOUNDRY_PROJECT_ENDPOINT)
-AZURE_FUNCTION_APP_HOSTNAME=$(azd env get-value AZURE_FUNCTION_APP_HOSTNAME)
-AZURE_FUNCTION_KEY=$(az functionapp keys list --name $(azd env get-value AZURE_FUNCTION_APP_NAME) --resource-group $(azd env get-value AZURE_RESOURCE_GROUP) --query masterKey -o tsv)
-EOF
+python -m src.agents.lab02.orchestrator
 ```
 
-Load it into your current shell (PowerShell):
+Step through:
 
-```powershell
-Get-Content .env | ForEach-Object {
-  if ($_ -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') }
-}
-```
+1. **Client name:** `Contoso Manufacturing` (or anything).
+2. **Tip paragraph:** type `/paste`, paste the contents of
+   [`data/sample-docs/tip.md`](../../data/sample-docs/tip.md),
+   then `/end`.
+3. Agent extracts → prints `IntakeFacts`.
+4. Orchestrator calls the classifier → prints `LegalNormReference[]`.
+5. **HITL #1 — type `approve`.**
+6. Orchestrator calls the drafter → prints the `AssessmentMemo`.
+7. **HITL #2 — type `approve`.**
+8. `persist_assessment` returns 201 with the memo blob path.
+9. `notify_reviewer` returns 202.
 
-bash / zsh:
+Open the storage account in the portal → `assessments` container →
+your memo is there as `<case_id>/memo-<timestamp>.json`.
+
+## 6. Negative path (5 min)
 
 ```bash
-set -a; source .env; set +a
+python -m src.agents.lab02.orchestrator --bypass-hitl
 ```
 
-Make sure you're logged in for `DefaultAzureCredential`:
-
-```bash
-az login
-```
-
-## 6. Read the orchestrator before you run it (5 min)
-
-Open [`../../src/agents/orchestrator.py`](../../src/agents/orchestrator.py) and read it top-to-bottom. It's ~250 lines and is the *content* of this lab — the rest of the lab is just walking it through. Things to notice:
-
-- **`AzureAIProjectAgentProvider.get_agent(agent_name=...)`** — fetches a *hosted* Foundry agent by its portal name. No re-creating agents in code; the three agents you just built in steps 3–5 (plus the intake agent from Lab 01) live in the portal.
-- **`_interactive_intake`** — multi-turn conversation with the intake sub-agent, using a server-side thread (`agent.get_new_thread()`). Each user line is sent via `agent.run(msg, thread=thread)`; the agent's reply prints back. When you type `done`, the orchestrator asks the agent for its final `IntakeFacts` JSON.
-- **`_call_specialist_json`** — single-shot call for classifier and drafter (`agent.run(json_payload)`), parses the JSON response with `_extract_json` (which tolerates stray markdown fences as a belt-and-braces measure on top of the *Response format = JSON object* toggle).
-- **HITL gates** — `_approve_in_terminal(...)` prints the payload, reads `approve` / anything else from stdin, returns `(ok, comment)`. The orchestrator returns early on reject.
-- **`approved_by` is only set inside the HITL-approved branch.** If you skip the approval, the field stays `None` and the Function refuses the persist — that's the defense-in-depth gate (step 8).
-- **No LLM orchestrator agent.** The workflow shape is deterministic Python; the LLMs only do the work *inside* each step.
-
-## 7. Run the workflow end-to-end (15 min)
-
-From the repo root, with the venv active and `.env` loaded:
-
-```bash
-python -m src.agents.orchestrator
-```
-
-The script will:
-
-1. Resolve the three hosted agents by name.
-2. Start the intake conversation. Use this opener (you can paste it):
-
-   > I am Senior Manager Mara Lehmann. The matter concerns Helios Industrieanlagen GmbH — anonymous tip about possible improper advisor payments via Adriatic Advisory in HR/BiH. I will paste two intake emails next.
-
-   Then open [`../../data/sample-docs/intake-email-01-anonymous-tip.md`](../../data/sample-docs/intake-email-01-anonymous-tip.md) and [`../../data/sample-docs/intake-email-02-internal-whistleblower.md`](../../data/sample-docs/intake-email-02-internal-whistleblower.md) and **paste their contents** into the next `You>` prompts, one at a time. The hosted Foundry agent has no filesystem access — it can only see what you type.
-
-   The intake agent will call `log_request` (governance hook from Lab 01) on the first turn and then ask follow-up questions. Answer briefly. When you've covered the facts, type `done` — the agent will emit a final `IntakeFacts` JSON object and the script will parse it.
-
-3. Call `noclar-legal-classifier` with the intake facts. Prints 1–3 norms.
-4. **HITL #1** — script prints the classification and prompts. Type `approve`.
-5. Call `noclar-drafter` with intake + confirmed classification. Prints the full memo.
-6. **HITL #2** — script prints the memo and prompts. Type `approve`.
-7. Call `persist_assessment` with `approved_by` = your UPN. Function returns `201` with `memo_blob`.
-8. Call `notify_reviewer` with the memo blob path. Function returns `202`.
-9. Prints a final summary: case id, memo blob path, approver.
-
-Sanity check the persisted memo:
-
-```powershell
-$account = (azd env get-value AZURE_STORAGE_ACCOUNT).Trim()
-az storage blob list --account-name $account --container-name assessments --auth-mode login --query "[].name" -o tsv
-```
-
-Pick the blob path from the summary and download it:
-
-```powershell
-$blob = "<paste the memo_blob path here>"
-az storage blob download --account-name $account --container-name assessments --name $blob --file ./memo.json --auth-mode login
-code ./memo.json
-```
-
-Compare to [`../../data/memo-template/example-helios.md`](../../data/memo-template/example-helios.md).
-
-## 8. Negative path — bypass the HITL gate (5 min)
-
-The orchestrator's `--bypass-hitl` flag skips both terminal prompts and (critically) does **not** set `approved_by`. This is what would happen if the script were buggy, the prompt drifted, or someone forked the orchestrator and removed the approval calls.
-
-```bash
-python -m src.agents.orchestrator --bypass-hitl
-```
-
-Walk through intake the same way as in step 7, type `done`. The script proceeds straight through the classifier and drafter without prompting, then attempts to persist. Expected:
+Paste the same fixture. The orchestrator skips both gates, the memo
+goes out **without** `approved_by`, and the Function responds:
 
 ```
-Step 4 — Persist memo via Function
-  Function call FAILED: HTTPStatusError('Client error 409 Conflict for url ...')
-  Expected when --bypass-hitl is set: persist_assessment returns HTTP 409
-  because approved_by is missing.
-  This is the defense-in-depth gate — the storage layer refuses to write
-  a memo that bypassed the human.
+HTTP 409 Conflict
+{"error": "memo not approved", "reason": "approved_by is required"}
 ```
 
-The Function returns `409` with body `{"error": "memo missing approved_by — HITL gate not satisfied"}`.
+> **The teaching point.** The orchestrator could be wrong. The model
+> could be wrong. A future code change could *remove* the terminal
+> approval step by accident. The 409 is a hard backstop — the
+> storage layer refuses what the orchestrator skipped.
 
-This is the takeaway: **the persistence layer enforces the gate independently of the orchestrator.** Two layers — Python + Function. Either one alone is necessary but not sufficient; both together is the production posture.
+## 7. Walk the traces (5 min)
 
-## 9. Open Traces (5 min)
+Foundry → **Tracing → Traces**. The latest happy-path run shows:
 
-The hosted-agent runs (intake / classifier / drafter) are recorded by **Foundry Tracing** because they execute server-side via the project endpoint. In the portal: **Tracing → Recent runs → click your full-workflow run**.
+- one root span for the orchestrator's local Python run
+- three child spans for the hosted sub-agents
+- two Function-tool calls at the end
 
-You should see:
-
-- One run per sub-agent call — `noclar-intake` will show multiple LLM spans (one per turn of the conversation) and a tool call for `log_request`. `noclar-legal-classifier` and `noclar-drafter` will each show a single LLM span.
-- For the bypass run: the same intake / classifier / drafter spans, but no record of `persist_assessment` succeeding (the Function returned 409, surfaced in your terminal). Open App Insights → *Failures* on the Function App to see the 409 from the server side.
-
-Agent Framework also supports OpenTelemetry export — wire it to App Insights with `agent_framework.observability.setup_observability()` if you want the Python orchestrator's spans (the wrapper around each `agent.run()` plus the HITL gate timings) in the same Application Map as your Functions. Out of scope for this lab; revisit when you take this back to a real engagement.
-
-## ✅ Done when
-
-- [ ] All four Function handlers are deployed (`log_request`, `persist_assessment`, `notify_reviewer`, `process_reviewer`).
-- [ ] Two new agents exist in the project: `noclar-legal-classifier`, `noclar-drafter` (with **Response format = JSON object** on both).
-- [ ] You ran `python -m src.agents.orchestrator` end-to-end and approved at HITL #1 *and* HITL #2 in the terminal.
-- [ ] A persisted memo blob exists in `assessments/`.
-- [ ] `python -m src.agents.orchestrator --bypass-hitl` returned 409 from `persist_assessment`.
-- [ ] Traces in the portal show the three sub-agent runs.
-
-## Discussion (5 min wrap-up)
-
-- Today the orchestrator runs in your terminal and the HITL prompts are stdin. For a partner-level reviewer at EY, where should this live in production — Teams adaptive card, Outlook approval, dedicated web app? Which parts of [`orchestrator.py`](../../src/agents/orchestrator.py) change, and which stay the same?
-- We enforced the HITL gate in *both* the Python orchestrator and the `persist_assessment` Function. Where else should we add defense-in-depth (Search index ACLs? Logic App approval? Conditional Access on the Function App?).
-- Agent Framework lets you swap the orchestrator's transport (sync Python today, Durable Function tomorrow, Logic App workflow next) without changing the sub-agents. What does that imply for how the prompt team and the platform team divide ownership?
+App Insights → **Failures**: the 409 from the bypass run shows up
+here, with the request body in the custom dimensions.
 
 ---
 
-## Reference
+## ✅ Done when
 
-- Orchestrator: [`src/agents/orchestrator.py`](../../src/agents/orchestrator.py) — the lab content
-- Prompts: [`src/agents/prompts/legal_classifier.md`](../../src/agents/prompts/legal_classifier.md), [`drafter.md`](../../src/agents/prompts/drafter.md)
-- Function source: [`src/functions/function_app.py`](../../src/functions/function_app.py) → `persist_assessment`, `notify_reviewer`, `process_reviewer`
-- HTTP wrappers (httpx): [`src/agents/tools/functions_tools.py`](../../src/agents/tools/functions_tools.py)
-- Memo template: [`data/memo-template/template.md`](../../data/memo-template/template.md)
+- [ ] All three Lab 02 Functions are deployed (visible in the
+      portal under your Functions app).
+- [ ] Three agents exist in Foundry: `noclar-intake`,
+      `noclar-legal-classifier`, `noclar-drafter`.
+- [ ] Happy path ran end-to-end; a memo blob with `approved_by` set
+      is in `assessments/`.
+- [ ] `--bypass-hitl` returned **HTTP 409**.
+- [ ] You opened one Trace and one Failure in App Insights.
+
+## Discussion (5 min)
+
+- Where would you put HITL gate #3, and why?
+- The orchestrator is Python. When would you replace it with an
+  **LLM-driven** orchestrator agent? (Lab 04 builds that variant.)
+- The two specialists return JSON. What changes if you let them
+  return prose?

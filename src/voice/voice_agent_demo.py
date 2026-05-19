@@ -5,9 +5,11 @@ A small browser-mic-driven demo that:
   2. Connects to Voice Live with the existing `noclar-intake` agent.
   3. Streams audio in both directions through the default device.
 
-Note: This is a *demo*, not a full lab. The C# ACSVoiceAgent repo is the
-production-grade reference; this script keeps the workshop in a single
-language (Python).
+Note: This is a *demo*, not a full lab. The workshop deliberately avoids
+Azure Communication Services (telephony) — the demo runs entirely over the
+internet via a WebSocket from the demo laptop to the Foundry Voice Live
+endpoint, using the local microphone and speakers. No phone number, no
+ACS resource, no PSTN.
 
 Run locally:
     pip install -r src/voice/requirements.txt
@@ -17,13 +19,33 @@ Run locally:
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 import uuid
 
+import httpx
 from azure.identity.aio import DefaultAzureCredential
 
-from src.agents.tools.functions_tools import log_request
 from src.shared.config import get_settings
+
+
+def _log_request(conversation_id: str, channel: str = "voice", locale: str = "en-US") -> None:
+    host = os.environ.get("AZURE_FUNCTION_APP_HOSTNAME")
+    if not host:
+        return
+    if not host.startswith("http"):
+        host = f"https://{host}"
+    key = os.environ.get("AZURE_FUNCTION_KEY")
+    params = {"code": key} if key else {}
+    try:
+        httpx.post(
+            f"{host}/api/log_request",
+            json={"conversation_id": conversation_id, "channel": channel, "locale": locale},
+            params=params,
+            timeout=10,
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"log_request failed (non-fatal for demo): {exc!r}", file=sys.stderr)
 
 
 async def _stream_voice(conversation_id: str) -> None:
@@ -49,10 +71,33 @@ async def _stream_voice(conversation_id: str) -> None:
         endpoint=settings.foundry_project_endpoint,
         credential=credential,
     ) as client:
-        # Connect with the existing intake agent so the prompt and tools are reused.
+        # Connect with `noclar-voice-intake` — a *separate* agent from the
+        # JSON-mode `noclar-intake` used by the Lab 02 orchestrator. The
+        # voice channel needs conversational, plain-text replies (the TTS
+        # reads them aloud), so the voice agent ships with its own prompt
+        # (`src/agents/prompts/voice_intake.md`) and Response format=Text.
+        #
+        # `model` must reference a *realtime* (speech-to-speech) deployment
+        # — provisioned by infra/modules/foundry.bicep as
+        # `gpt-4o-mini-realtime-preview` and surfaced via the
+        # AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT env var. Without a realtime
+        # model Voice Live falls back to cascaded STT → LLM → TTS, which
+        # is noticeably laggy and lacks barge-in.
+        realtime_deployment = (
+            settings.foundry_realtime_deployment
+            or os.environ.get("AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT")
+        )
+        if not realtime_deployment:
+            print(
+                "AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT is not set. Re-run "
+                "`azd env get-values > .env` after `azd provision`, or "
+                "deploy a realtime model manually.",
+                file=sys.stderr,
+            )
+            return
         async with client.connect(
-            agent_name="noclar-intake",
-            model=settings.foundry_model_deployment,
+            agent_name="noclar-voice-intake",
+            model=realtime_deployment,
             voice="alloy",
             input_audio_format="pcm16",
             output_audio_format="pcm16",
@@ -70,7 +115,7 @@ async def _stream_voice(conversation_id: str) -> None:
 
 def main() -> None:
     conversation_id = str(uuid.uuid4())
-    log_request(conversation_id=conversation_id, channel="voice", locale="en-US")
+    _log_request(conversation_id=conversation_id, channel="voice", locale="en-US")
     try:
         asyncio.run(_stream_voice(conversation_id))
     except KeyboardInterrupt:
