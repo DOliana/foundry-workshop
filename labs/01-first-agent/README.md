@@ -80,7 +80,7 @@ The intake agent's contract is **one user message** that contains
 both the client name line and the tip paragraph, and **one JSON
 reply**. (That's why JSON response format works — the agent never
 chats, it always extracts.) Send this single message (paste it as
-one block):
+one block) - use Shift+Enter to add a new line in the chat window:
 
 ```
 Extract the IntakeFacts JSON from the intake below.
