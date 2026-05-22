@@ -42,12 +42,12 @@ uncomment.
 
 | File | Purpose |
 |---|---|
-| `src/functions/persist_assessment.py` | Function: persist approved memo (rejects if not approved). |
-| `src/functions/notify_reviewer.py` | Function: enqueue reviewer notification. |
-| `src/functions/process_reviewer.py` | Queue-trigger Function (optional). |
-| `src/functions/function_app.py` | Uncomment the **two `app.register_blueprint(...)` lines** for Lab 02. |
-| `src/labs/lab02/orchestrator.py` | The Python orchestrator. |
-| `src/labs/lab02/functions_tools.py` | httpx wrappers around the Functions HTTP endpoints. |
+| [`src/functions/persist_assessment.py`](../../src/functions/persist_assessment.py) | Function: persist approved memo (rejects if not approved). |
+| [`src/functions/notify_reviewer.py`](../../src/functions/notify_reviewer.py) | Function: enqueue reviewer notification. |
+| [`src/functions/process_reviewer.py`](../../src/functions/process_reviewer.py) | Queue-trigger Function (optional). |
+| [`src/functions/function_app.py`](../../src/functions/function_app.py) | Uncomment the **two `app.register_blueprint(...)` lines** for Lab 02. |
+| [`src/labs/lab02/orchestrator.py`](../../src/labs/lab02/orchestrator.py) | The Python orchestrator. |
+| [`src/labs/lab02/functions_tools.py`](../../src/labs/lab02/functions_tools.py) | httpx wrappers around the Functions HTTP endpoints. |
 
 In VS Code: select the commented block, **Ctrl+/** (toggle line
 comment) flips the whole block in one shot.
