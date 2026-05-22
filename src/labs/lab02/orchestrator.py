@@ -323,11 +323,12 @@
 #             intake_facts_raw = await _interactive_intake(intake, tip_override=tip_override)
 #             intake_facts = IntakeFacts(**intake_facts_raw)
 
-#             # --- Lab 03 §8: uncomment this block --------------------------
-#             # Calls the `consultancy-contract` Content Understanding analyzer
+#             # Lab 03 §8 — Content Understanding handoff.
+#             # Calls the `consultancycontract` Content Understanding analyzer
 #             # against the contract PDF, prints the extracted fields, and
 #             # appends a single evidence bullet to `documented_facts` so the
 #             # downstream drafter picks it up in Section 3 of the memo.
+#             # --- Lab 03 §8: uncomment this block --------------------------
 #             # cu_fields = _call_content_understanding(
 #             #     analyzer_id="consultancycontract",
 #             #     file_path=Path("data/sample-docs/contract-excerpt-consultancy.pdf"),
@@ -345,7 +346,7 @@
 #             #     "(source: contract-excerpt-consultancy; "
 #             #     "extracted_by: content-understanding/consultancy-contract)."
 #             # )
-#             # --------------------------------------------------------------
+#             # --- end Lab 03 §8 --------------------------------------------
 
 #             print(json.dumps(intake_facts.model_dump(mode="json"), indent=2, ensure_ascii=False))
 #             print(f"\n  Intake captured. case_id={intake_facts.case_id}")
