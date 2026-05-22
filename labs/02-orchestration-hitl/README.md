@@ -111,24 +111,6 @@ in `function_app.py` and re-run `azd deploy functions`.
 > every entry → **Save**. Specialist agents do not need any tools;
 > the orchestrator is what calls the Functions.
 
-> **Prefer code? Run the script instead.** Clicking through the
-> portal is how you'd *demo* agent creation. In a real deployment
-> you'd ship agents as code — the prompt files in
-> [`src/labs/prompts/`](../../src/labs/prompts/) are already
-> versioned in git, and
-> [`scripts/lab02_register_agents.py`](../../scripts/lab02_register_agents.py)
-> creates/updates both agents idempotently from those prompts using
-> the same Foundry SDK call the portal uses under the hood:
->
-> ```bash
-> python scripts/lab02_register_agents.py
-> ```
->
-> Re-running the script is safe — it upserts by agent name. Skip
-> the portal table above if you used the script (but still check
-> the *Web Search* tool callout — the script already creates the
-> agents with no tools attached, so nothing to delete).
-
 ## 3. Read the orchestrator (5 min)
 
 Open [`src/labs/lab02/orchestrator.py`](../../src/labs/lab02/orchestrator.py).
