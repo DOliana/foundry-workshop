@@ -61,9 +61,25 @@ azd deploy functions
 
 > **What just happened.** `azd deploy functions` packaged the three
 > blueprints, pushed them to `func-<suffix>`, and the Functions
-> runtime registered the routes. Browse to the Functions app in the
-> portal — under **Functions** you should see `persist_assessment`,
-> `notify_reviewer`, `process_reviewer`.
+> runtime registered the routes.
+
+**Verify in the portal.** Open the Functions app:
+
+```bash
+azd env get-value AZURE_FUNCTION_APP_NAME
+```
+
+In the [Azure portal](https://portal.azure.com), open the Function
+App with that name, then under **Functions → Functions** confirm all
+three appear with **Enabled** status:
+
+- `persist_assessment` (HTTP trigger)
+- `notify_reviewer` (HTTP trigger)
+- `process_reviewer` (Queue trigger on `reviewer-inbox`)
+
+If any are missing, the deploy didn't register the blueprint — check
+that you uncommented the matching `app.register_blueprint(...)` lines
+in `function_app.py` and re-run `azd deploy functions`.
 
 ## 2. Create the two specialist agents in the portal (5 min)
 
@@ -94,6 +110,24 @@ azd deploy functions
 > `noclar-legal-classifier`, `noclar-drafter`) → **Tools** → delete
 > every entry → **Save**. Specialist agents do not need any tools;
 > the orchestrator is what calls the Functions.
+
+> **Prefer code? Run the script instead.** Clicking through the
+> portal is how you'd *demo* agent creation. In a real deployment
+> you'd ship agents as code — the prompt files in
+> [`src/labs/prompts/`](../../src/labs/prompts/) are already
+> versioned in git, and
+> [`scripts/lab02_register_agents.py`](../../scripts/lab02_register_agents.py)
+> creates/updates both agents idempotently from those prompts using
+> the same Foundry SDK call the portal uses under the hood:
+>
+> ```bash
+> python scripts/lab02_register_agents.py
+> ```
+>
+> Re-running the script is safe — it upserts by agent name. Skip
+> the portal table above if you used the script (but still check
+> the *Web Search* tool callout — the script already creates the
+> agents with no tools attached, so nothing to delete).
 
 ## 3. Read the orchestrator (5 min)
 

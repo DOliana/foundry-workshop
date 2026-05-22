@@ -128,35 +128,36 @@ def register_agents(client: AgentsClient, model_deployment: str) -> dict[str, st
     def _instructions(name: str) -> str:
         return (PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8")
 
-    # Map of agent name -> instructions filename + description
+    # Map of agent name -> (instructions filename, description, response_format).
+    # The three agents that emit JSON must be created with response_format =
+    # "json_object" so they behave identically to the portal-built ones the
+    # participants create in Labs 01–02. `grounded` (cited prose) and
+    # `orchestrator` (tool-using planner) use the default text mode.
     specs = {
-        "noclar-intake": ("intake", "Guided NOCLAR intake (chat + voice)"),
-        "noclar-grounded": ("grounded", "Cited grounding over the NOCLAR corpus"),
-        "noclar-legal-classifier": ("legal_classifier", "Proposes potentially violated norms"),
-        "noclar-drafter": ("drafter", "Drafts the Initial Assessment Memo"),
-        "noclar-orchestrator": ("orchestrator", "Top-level NOCLAR workflow"),
+        "noclar-intake": ("intake", "Guided NOCLAR intake (chat + voice)", "json_object"),
+        "noclar-grounded": ("grounded", "Cited grounding over the NOCLAR corpus", None),
+        "noclar-legal-classifier": ("legal_classifier", "Proposes potentially violated norms", "json_object"),
+        "noclar-drafter": ("drafter", "Drafts the Initial Assessment Memo", "json_object"),
+        "noclar-orchestrator": ("orchestrator", "Top-level NOCLAR workflow", None),
     }
 
     existing = {a.name: a for a in client.list_agents()}
     out: dict[str, str] = {}
-    for name, (prompt_file, desc) in specs.items():
+    for name, (prompt_file, desc, response_format) in specs.items():
         instr = _instructions(prompt_file)
+        kwargs: dict = {
+            "model": model_deployment,
+            "instructions": instr,
+            "description": desc,
+        }
+        if response_format is not None:
+            kwargs["response_format"] = response_format
         if name in existing:
-            updated = client.update_agent(
-                agent_id=existing[name].id,
-                model=model_deployment,
-                instructions=instr,
-                description=desc,
-            )
+            updated = client.update_agent(agent_id=existing[name].id, **kwargs)
             out[name] = updated.id
             log.info("updated agent %s", name)
         else:
-            agent = client.create_agent(
-                model=model_deployment,
-                name=name,
-                description=desc,
-                instructions=instr,
-            )
+            agent = client.create_agent(name=name, **kwargs)
             out[name] = agent.id
             log.info("created agent %s", name)
     return out
