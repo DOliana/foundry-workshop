@@ -128,30 +128,29 @@ def register_agents(client: AgentsClient, model_deployment: str) -> dict[str, st
     def _instructions(name: str) -> str:
         return (PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8")
 
-    # Map of agent name -> (instructions filename, description, response_format).
-    # The three agents that emit JSON must be created with response_format =
-    # "json_object" so they behave identically to the portal-built ones the
-    # participants create in Labs 01–02. `grounded` (cited prose) and
-    # `orchestrator` (tool-using planner) use the default text mode.
+    # Map of agent name -> (instructions filename, description).
+    # All agents use response_format="auto" — the v1 Foundry Agents API
+    # only accepts "auto" on this SDK; the prompts themselves instruct the
+    # JSON-emitting agents (intake, classifier, drafter) to return a single
+    # JSON object, which works reliably with the default sampling.
     specs = {
-        "noclar-intake": ("intake", "Guided NOCLAR intake (chat + voice)", "json_object"),
-        "noclar-grounded": ("grounded", "Cited grounding over the NOCLAR corpus", None),
-        "noclar-legal-classifier": ("legal_classifier", "Proposes potentially violated norms", "json_object"),
-        "noclar-drafter": ("drafter", "Drafts the Initial Assessment Memo", "json_object"),
-        "noclar-orchestrator": ("orchestrator", "Top-level NOCLAR workflow", None),
+        "noclar-intake": ("intake", "Guided NOCLAR intake (chat + voice)"),
+        "noclar-grounded": ("grounded", "Cited grounding over the NOCLAR corpus"),
+        "noclar-legal-classifier": ("legal_classifier", "Proposes potentially violated norms"),
+        "noclar-drafter": ("drafter", "Drafts the Initial Assessment Memo"),
+        "noclar-orchestrator": ("orchestrator", "Top-level NOCLAR workflow"),
     }
 
     existing = {a.name: a for a in client.list_agents()}
     out: dict[str, str] = {}
-    for name, (prompt_file, desc, response_format) in specs.items():
+    for name, (prompt_file, desc) in specs.items():
         instr = _instructions(prompt_file)
         kwargs: dict = {
             "model": model_deployment,
             "instructions": instr,
             "description": desc,
+            "response_format": "auto",
         }
-        if response_format is not None:
-            kwargs["response_format"] = response_format
         if name in existing:
             updated = client.update_agent(agent_id=existing[name].id, **kwargs)
             out[name] = updated.id
@@ -189,6 +188,17 @@ def main() -> None:
         print(f"  {n}: {i}")
 
     print("\nSeed complete. Open the Foundry portal to inspect the project.")
+    print()
+    print("⚠️  Manual portal follow-up required for the JSON-emitting agents")
+    print("    (noclar-intake, noclar-legal-classifier, noclar-drafter):")
+    print()
+    print("    1. Build → Agents → open the agent.")
+    print("    2. Tools → delete the default Web Search / Grounding entry.")
+    print("       (JSON-object response mode is incompatible with Web Search.)")
+    print("    3. Response format → switch from 'auto' to 'JSON object' → Save.")
+    print()
+    print("    The Foundry v1 Agents SDK only accepts response_format='auto'")
+    print("    on create/update, so the script cannot do steps 2–3 for you.")
 
 
 if __name__ == "__main__":
