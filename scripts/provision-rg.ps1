@@ -6,7 +6,8 @@
 #                              -Location swedencentral `
 #                              -EnvName foundry-alice `
 #                              [-Subscription <sub-id>] `
-#                              [-PrincipalId <object-id>]
+#                              [-PrincipalId <object-id>] `
+#                              [-DeployRealtimeModel]
 #
 # What it does:
 #   1. Ensures the RG exists (creates it if not).
@@ -28,7 +29,8 @@ param(
     [string]$Location = 'swedencentral',
     [string]$EnvName,
     [string]$Subscription,
-    [string]$PrincipalId
+    [string]$PrincipalId,
+    [switch]$DeployRealtimeModel
 )
 
 $ErrorActionPreference = 'Stop'
@@ -68,6 +70,8 @@ if (-not $haveEnv) {
 
 azd env set AZURE_LOCATION $Location
 azd env set AZURE_RESOURCE_GROUP $ResourceGroup
+$deployRealtimeModelValue = if ($DeployRealtimeModel.IsPresent) { 'true' } else { 'false' }
+azd env set DEPLOY_REALTIME_MODEL $deployRealtimeModelValue
 
 if ($PrincipalId) {
     azd env set AZURE_PRINCIPAL_ID $PrincipalId

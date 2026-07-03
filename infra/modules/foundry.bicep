@@ -33,6 +33,9 @@ param embeddingModelVersion string = '1'
 @description('TPM capacity for the embedding model deployment (in thousands).')
 param embeddingModelCapacity int = 30
 
+@description('Deploy the realtime speech-to-speech model for the optional Lab 04 Voice Live demo. Leave false unless the subscription has realtime model quota.')
+param deployRealtimeModel bool = false
+
 @description('Realtime speech-to-speech model used by Lab 04 Voice Live demo. Deployed in the same Foundry account; reached via the project endpoint over WSS. Swap if your region does not carry this model — `gpt-realtime` and `gpt-4o-realtime-preview` are the other common choices.')
 param realtimeModelName string = 'gpt-realtime-1.5'
 
@@ -123,10 +126,8 @@ resource embeddingModelDeployment 'Microsoft.CognitiveServices/accounts/deployme
   ]
 }
 
-// Realtime speech-to-speech model — used by the Lab 04 Voice Live demo. The
-// participant-facing flow is text; only the instructor's voice demo touches
-// this deployment. We size it for a single concurrent session.
-resource realtimeModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = {
+// Optional realtime speech-to-speech model for the Lab 04 Voice Live demo.
+resource realtimeModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = if (deployRealtimeModel) {
   parent: foundry
   name: realtimeModelName
   sku: {
@@ -177,4 +178,4 @@ output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/a
 output projectPrincipalId string = foundryProject.identity.principalId
 output defaultModelDeploymentName string = defaultModelDeployment.name
 output embeddingModelDeploymentName string = embeddingModelDeployment.name
-output realtimeModelDeploymentName string = realtimeModelDeployment.name
+output realtimeModelDeploymentName string = deployRealtimeModel ? realtimeModelDeployment.name : ''

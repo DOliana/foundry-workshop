@@ -37,6 +37,9 @@ param embeddingModelVersion string = '1'
 @description('TPM capacity (thousands) for the embedding model deployment.')
 param embeddingModelCapacity int = 30
 
+@description('Deploy the realtime speech-to-speech model for the optional Lab 04 Voice Live demo. Leave false unless the subscription has realtime model quota.')
+param deployRealtimeModel bool = false
+
 @description('Realtime speech-to-speech model for the Lab 04 Voice Live demo')
 param realtimeModelName string = 'gpt-realtime-1.5'
 
@@ -94,6 +97,7 @@ module foundry 'modules/foundry.bicep' = {
     embeddingModelName: embeddingModelName
     embeddingModelVersion: embeddingModelVersion
     embeddingModelCapacity: embeddingModelCapacity
+    deployRealtimeModel: deployRealtimeModel
     realtimeModelName: realtimeModelName
     realtimeModelVersion: realtimeModelVersion
     realtimeModelCapacity: realtimeModelCapacity

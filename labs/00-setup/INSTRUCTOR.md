@@ -13,6 +13,14 @@ in the room. Participants only see [`README.md`](./README.md).
    in the same region. If quota is short, switch region in
    `infra/main.parameters.json` and re-run a dry provision.
 
+    The Lab 04 realtime voice model is optional and not deployed by
+    default. Only enable it for instructor/demo environments after
+    confirming realtime-model quota:
+
+    ```bash
+    azd env set DEPLOY_REALTIME_MODEL true
+    ```
+
 2. **Pre-create one resource group per participant** if you want to
    avoid the in-room RG-create step:
 
@@ -32,11 +40,7 @@ in the room. Participants only see [`README.md`](./README.md).
    `.env` next to each azd environment. ~10 min per RG; parallelise
    on the CLI if you have many.
 
-3. **Smoke-test one provisioned RG end-to-end** (you, not the
-   participant): open the Foundry portal, confirm both model
-   deployments, eyeball the empty Functions app, peek at Live
-   Metrics. If anything is off, fix it once now rather than 15 times
-   in the room.
+3. **Smoke-test one provisioned RG end-to-end** (you, not the participant): open the Foundry portal, confirm the chat and embedding model deployments, eyeball the empty Functions app, peek at Live Metrics. If you enabled `DEPLOY_REALTIME_MODEL`, confirm the realtime deployment too. If anything is off, fix it once now rather than 15 times in the room.
 
 ## In the room — once per participant
 

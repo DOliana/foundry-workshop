@@ -14,7 +14,7 @@ Azure AI Foundry. To keep the moving parts visible, we **introduce one
 service per lab**, and each lab deploys *its own* code:
 
 | Lab | Service introduced | What you build with it |
-|---|---|---|
+| --- | --- | --- |
 | **00 (here)** | **Azure AI Foundry**, **Application Insights** | Provision empty shells, verify Foundry is reachable. |
 | 01 | (no new service) | Create your first agent in the portal. |
 | 02 | **Azure Functions**, **Storage queue** | Persist approved memos and notify a reviewer. |
@@ -39,6 +39,9 @@ You need (or your instructor needs on your behalf):
 - A `gpt-4.1-mini` model quota assigned to the chosen region
   (**Sweden Central** by default). The instructor confirms this
   before the workshop.
+- Optional, for the Lab 04 Voice Live demo: realtime model quota for
+  `gpt-realtime-1.5` in the same region. This is **not required** for
+  the hands-on labs and is not deployed unless explicitly enabled.
 - After provisioning: a handful of data-plane roles on the resources
   inside the RG (Cognitive Services User on Foundry, Storage Blob
   Data Contributor on the storage account, Search Index Data
@@ -101,21 +104,33 @@ az account set --subscription "<YOUR-SUB-NAME-OR-ID>"
 
 Ask the instructor first — they may have created one for you.
 
+If you are preparing the optional Voice Live demo, first check realtime
+model quota in the Azure AI Foundry portal: open the Foundry portal,
+go to **Management center → Quotas**, select the workshop region, and
+look for `gpt-realtime-1.5`. If quota is available, opt in when you
+provision. If quota is not available, leave the flag off; the rest of
+the workshop still works.
+
 PowerShell:
 
 ```powershell
 ./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<initials> -Location swedencentral
+# With confirmed realtime quota for the optional voice demo:
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<initials> -Location swedencentral -DeployRealtimeModel
 ```
 
 bash:
 
 ```bash
 ./scripts/provision-rg.sh -g rg-foundry-<initials> -l swedencentral
+# With confirmed realtime quota for the optional voice demo:
+./scripts/provision-rg.sh -g rg-foundry-<initials> -l swedencentral --deploy-realtime-model
 ```
 
 The script creates the RG if it does not exist and runs
 `azd env new` + `azd env set AZURE_RESOURCE_GROUP=…` + `azd provision`
-into it. It is idempotent.
+into it. It also sets `DEPLOY_REALTIME_MODEL` to `true` only when you
+pass the realtime flag. It is idempotent.
 
 > **Why a resource group, not a subscription?** You typically don't
 > have subscription-owner permissions for a workshop. The Bicep in
@@ -133,6 +148,8 @@ Spot-check that at least these keys exist:
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
 - `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-4.1-mini`)
 - `AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT` (= `text-embedding-3-small`)
+- `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` (= `gpt-realtime-1.5`, only
+  if you enabled the optional realtime deployment)
 - `AZURE_AI_FOUNDRY_PORTAL_URL`
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`
 - `AZURE_RESOURCE_GROUP`
@@ -150,6 +167,8 @@ Open the URL in your browser. Confirm:
 - The project `noclar-assessment` is selected (top-left).
 - Under **My assets → Models + endpoints** you see two deployments:
   `gpt-4.1-mini` and `text-embedding-3-small`.
+  If you enabled the optional realtime deployment, you also see
+  `gpt-realtime-1.5`.
 - Under **Build → Agents** the list is **empty**.
 
 ## 6. (Optional) Peek at Application Insights

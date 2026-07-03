@@ -28,6 +28,9 @@
     },
     "embeddingModelCapacity": {
       "value": "${EMBEDDING_MODEL_CAPACITY=30}"
+    },
+    "deployRealtimeModel": {
+      "value": "${DEPLOY_REALTIME_MODEL=false}"
     }
   }
 }

@@ -8,7 +8,8 @@
 #       [--location swedencentral] \
 #       [--env-name foundry-alice] \
 #       [--subscription <sub-id>] \
-#       [--principal <object-id>]
+#       [--principal <object-id>] \
+#       [--deploy-realtime-model]
 #
 # Short aliases:
 #   -g == --rg
@@ -35,6 +36,7 @@ LOCATION="swedencentral"
 ENV_NAME=""
 SUB=""
 PRINCIPAL_ID=""
+DEPLOY_REALTIME_MODEL="false"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -43,8 +45,9 @@ while [[ $# -gt 0 ]]; do
     --env-name) ENV_NAME="$2"; shift 2 ;;
     --subscription) SUB="$2"; shift 2 ;;
     --principal) PRINCIPAL_ID="$2"; shift 2 ;;
+    --deploy-realtime-model) DEPLOY_REALTIME_MODEL="true"; shift ;;
     --help|-h)
-      echo "Usage: ./scripts/provision-rg.sh --rg|-g <name> [--location|-l <region>] [--env-name <env>] [--subscription <sub>] [--principal <oid>]"
+      echo "Usage: ./scripts/provision-rg.sh --rg|-g <name> [--location|-l <region>] [--env-name <env>] [--subscription <sub>] [--principal <oid>] [--deploy-realtime-model]"
       exit 0
       ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
@@ -52,7 +55,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$RG" ]]; then
-  echo "Usage: ./scripts/provision-rg.sh --rg|-g <name> [--location|-l <region>] [--env-name <env>] [--subscription <sub>] [--principal <oid>]" >&2
+  echo "Usage: ./scripts/provision-rg.sh --rg|-g <name> [--location|-l <region>] [--env-name <env>] [--subscription <sub>] [--principal <oid>] [--deploy-realtime-model]" >&2
   exit 1
 fi
 
@@ -88,6 +91,7 @@ fi
 
 azd env set AZURE_LOCATION "$LOCATION"
 azd env set AZURE_RESOURCE_GROUP "$RG"
+azd env set DEPLOY_REALTIME_MODEL "$DEPLOY_REALTIME_MODEL"
 
 if [[ -n "$PRINCIPAL_ID" ]]; then
   azd env set AZURE_PRINCIPAL_ID "$PRINCIPAL_ID"
