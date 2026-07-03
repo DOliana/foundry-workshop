@@ -6,7 +6,7 @@
 #   ./scripts/provision-rg.sh \
 #       --rg rg-foundry-alice \
 #       [--location swedencentral] \
-#       [--env-name foundry-alice] \
+#       [--env-name foundry-workshop] \
 #       [--subscription <sub-id>] \
 #       [--principal <object-id>] \
 #       [--deploy-realtime-model]
@@ -19,7 +19,7 @@
 #   1. Ensures the RG exists (creates it if not).
 #   2. Initialises or reuses the azd environment $ENV_NAME.
 #   3. Sets AZURE_LOCATION + AZURE_RESOURCE_GROUP in the azd env so azd
-#      deploys into the existing RG instead of creating a new one.
+#      deploys into the named RG instead of deriving rg-<env-name>.
 #   4. Runs `azd provision`.
 #
 # If azd does not deploy into the existing RG correctly, fall back to:
@@ -59,7 +59,7 @@ if [[ -z "$RG" ]]; then
   exit 1
 fi
 
-if [[ -z "$ENV_NAME" ]]; then ENV_NAME="$RG"; fi
+if [[ -z "$ENV_NAME" ]]; then ENV_NAME="foundry-workshop"; fi
 
 if [[ -n "$SUB" ]]; then
   echo "Selecting subscription $SUB"

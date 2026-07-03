@@ -4,7 +4,7 @@
 # Usage (PowerShell):
 #   ./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-alice `
 #                              -Location swedencentral `
-#                              -EnvName foundry-alice `
+#                              [-EnvName foundry-workshop] `
 #                              [-Subscription <sub-id>] `
 #                              [-PrincipalId <object-id>] `
 #                              [-DeployRealtimeModel]
@@ -13,7 +13,7 @@
 #   1. Ensures the RG exists (creates it if not).
 #   2. Initialises or reuses the azd environment $EnvName.
 #   3. Sets AZURE_LOCATION + AZURE_RESOURCE_GROUP in the azd env so azd
-#      deploys into the existing RG instead of creating a new one.
+#      deploys into the named RG instead of deriving rg-<env-name>.
 #   4. Runs `azd provision`.
 #
 # If `azd` does not deploy into the existing RG correctly, fall back to:
@@ -35,7 +35,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-if (-not $EnvName) { $EnvName = $ResourceGroup }
+if (-not $EnvName) { $EnvName = 'foundry-workshop' }
 
 if ($Subscription) {
     Write-Host "Selecting subscription $Subscription"

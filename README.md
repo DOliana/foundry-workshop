@@ -22,7 +22,7 @@ The scenario throughout is a document-heavy compliance intake process — chosen
 
 ## Repo layout
 
-```
+```text
 foundry-workshop/
 ├── infra/                  Bicep infrastructure (azd)
 ├── src/
@@ -73,10 +73,18 @@ then runs `azd provision` against that RG. This keeps Lab 00 infrastructure-only
 resources are created, but the Functions app code declared in `azure.yaml` is
 not deployed until the later integration labs.
 
+Setting `AZURE_RESOURCE_GROUP` is important: if it is missing, `azd` derives a
+resource group name from the azd environment name. For example, an azd env named
+`rg-fdry-ws-local-devc` can produce a resource group named
+`rg-rg-fdry-ws-local-devc`. The provision script avoids that by treating the
+resource group name and the local azd environment name as separate values.
+
 If you are doing a solo dry run and want the full application deployed in one
 step, `azd up` may be fine after selecting the right subscription and resource
-group. For participant setup, use the provision script so the deployment stays
-inside the assigned RG and follows the staged lab flow.
+group. Before running `azd up`, set `AZURE_RESOURCE_GROUP` explicitly or choose
+an azd environment name that is not already prefixed with `rg-`. For participant
+setup, use the provision script so the deployment stays inside the assigned RG
+and follows the staged lab flow.
 
 The instructor then grants per-participant data-plane roles inside
 the RG with [`scripts/postdeploy-rbac.{ps1,sh}`](scripts/postdeploy-rbac.ps1).
@@ -84,7 +92,7 @@ the RG with [`scripts/postdeploy-rbac.{ps1,sh}`](scripts/postdeploy-rbac.ps1).
 This provisions, in **Sweden Central**:
 
 | Resource | Purpose |
-|---|---|
+| --- | --- |
 | Azure AI Foundry account + project | The hub for all agent work |
 | `gpt-5.4-mini` model deployment | Default chat model (TPM capped to leave room for your own deploys) |
 | `text-embedding-3-small` model deployment | Embedding model for the Lab 03 hybrid index |
@@ -102,7 +110,7 @@ Total provisioning time: ~10 minutes.
 ## Workshop agenda
 
 | Time | Block | Lab |
-|---|---|---|
+| --- | --- | --- |
 | 09:00–09:20 | Welcome & setup | [`labs/00-setup`](labs/00-setup) |
 | 09:20–10:45 | Block 1 — Your First Agent with Built-In Observability | [`labs/01-first-agent`](labs/01-first-agent) |
 | 11:00–12:15 | Block 2 — Multi-Agent Orchestration & HITL | [`labs/02-orchestration-hitl`](labs/02-orchestration-hitl) |

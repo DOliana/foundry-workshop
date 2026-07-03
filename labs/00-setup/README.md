@@ -130,7 +130,9 @@ bash:
 The script creates the RG if it does not exist and runs
 `azd env new` + `azd env set AZURE_RESOURCE_GROUP=…` + `azd provision`
 into it. It also sets `DEPLOY_REALTIME_MODEL` to `true` only when you
-pass the realtime flag. It is idempotent.
+pass the realtime flag. By default the azd environment is named
+`foundry-workshop`; pass `-EnvName` / `--env-name` only if you need a
+separate local azd environment. It is idempotent.
 
 > **Why a resource group, not a subscription?** You typically don't
 > have subscription-owner permissions for a workshop. The Bicep in
