@@ -67,6 +67,17 @@ azd auth login
 ./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<yourinitials> -Location swedencentral
 ```
 
+The script is intentional for the workshop flow. It creates or reuses the
+participant RG, sets `AZURE_RESOURCE_GROUP` in the `azd` environment, and
+then runs `azd provision` against that RG. This keeps Lab 00 infrastructure-only:
+resources are created, but the Functions app code declared in `azure.yaml` is
+not deployed until the later integration labs.
+
+If you are doing a solo dry run and want the full application deployed in one
+step, `azd up` may be fine after selecting the right subscription and resource
+group. For participant setup, use the provision script so the deployment stays
+inside the assigned RG and follows the staged lab flow.
+
 The instructor then grants per-participant data-plane roles inside
 the RG with [`scripts/postdeploy-rbac.{ps1,sh}`](scripts/postdeploy-rbac.ps1).
 
