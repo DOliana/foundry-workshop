@@ -25,9 +25,6 @@ param defaultModelCapacity int = 50
 @description('Default chat model name to deploy')
 param defaultModelName string = 'gpt-5.4-mini'
 
-@description('Default chat model version')
-param defaultModelVersion string = '2026-03-17'
-
 @description('Embedding model name (used by Lab 03 hybrid retrieval)')
 param embeddingModelName string = 'text-embedding-3-small'
 
@@ -92,7 +89,6 @@ module foundry 'modules/foundry.bicep' = {
     location: location
     tags: tags
     defaultModelName: defaultModelName
-    defaultModelVersion: defaultModelVersion
     defaultModelCapacity: defaultModelCapacity
     embeddingModelName: embeddingModelName
     embeddingModelVersion: embeddingModelVersion
