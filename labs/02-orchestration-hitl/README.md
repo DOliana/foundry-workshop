@@ -300,7 +300,7 @@ your application insights instance → Monitoring → logs): (it might take 1-2 
 2. Run this to get the details about the transaction using the first operation_id from the previous query
    ```kusto
    union requests, dependencies, traces
-   | where operation_id == "YOUR OPERATION ID"
+   | where operation_Id == "YOUR OPERATION ID"
    | project timestamp, itemType, name, operation_Name, operation_Id, duration, resultCode
    | order by timestamp asc
    ```
