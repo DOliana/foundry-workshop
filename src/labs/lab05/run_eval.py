@@ -15,7 +15,7 @@
 # Required env vars:
 
 #     AZURE_AI_FOUNDRY_PROJECT_ENDPOINT
-#     AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT      e.g. gpt-4.1-mini
+#     AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT      e.g. gpt-5.4-mini
 #     AZURE_FOUNDRY_API_VERSION              e.g. 2024-10-21
 # """
 

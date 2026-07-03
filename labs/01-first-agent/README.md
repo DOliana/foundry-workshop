@@ -25,7 +25,7 @@ two ingredients (model + prompt) so the picture stays simple.
 
 You will:
 
-1. Pick the model from your project's catalog (`gpt-4.1-mini`,
+1. Pick the model from your project's catalog (`gpt-5.4-mini`,
    deployed in Lab 00).
 2. Paste a system prompt that turns the model into an *intake*
    agent — it expects a client name and a one-paragraph tip and
@@ -53,7 +53,7 @@ Top-left: the project `noclar-assessment` is selected. Under
 **Build → Agents → + New agent**.
 
 - **Name:** `noclar-intake`
-- **Model deployment:** `gpt-4.1-mini`
+- **Model deployment:** `gpt-5.4-mini`
 - **Response format:** **JSON object** (the prompt asks for a JSON
   result, the response-format toggle hardens it)
 - **Instructions:** paste the contents of
@@ -156,7 +156,7 @@ the event.
 ## ✅ Done when
 
 - [ ] `noclar-intake` exists under **Build → Agents** with
-      `gpt-4.1-mini`, no tools, no knowledge.
+      `gpt-5.4-mini`, no tools, no knowledge.
 - [ ] You sent a single-message intake (client name line + paragraph)
       and saw one JSON object come back.
 - [ ] You opened one trace and pointed at the model deployment,

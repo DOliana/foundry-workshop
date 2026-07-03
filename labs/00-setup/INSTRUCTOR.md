@@ -7,7 +7,7 @@ in the room. Participants only see [`README.md`](./README.md).
 
 ## Days before the workshop
 
-1. **Confirm `gpt-4.1-mini` quota** in the workshop region
+1. **Confirm `gpt-5.4-mini` quota** in the workshop region
    (Sweden Central by default). Foundry → your account → Quotas.
    The lab also needs an embeddings model — **`text-embedding-3-small`**
    in the same region. If quota is short, switch region in
@@ -87,7 +87,7 @@ The script is idempotent — safe to re-run if you forgot a role.
 These have to be in place before the workshop starts, by someone with
 the relevant subscription rights:
 
-- **Model quota assignment** for `gpt-4.1-mini`,
+- **Model quota assignment** for `gpt-5.4-mini`,
   `text-embedding-3-small`, and `gpt-realtime-1.5` (or
   whichever realtime model your region carries) in the workshop
   region.

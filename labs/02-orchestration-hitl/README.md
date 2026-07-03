@@ -87,7 +87,7 @@ in `function_app.py` and re-run `azd deploy functions`.
 
 | Field | `noclar-legal-classifier` | `noclar-drafter` |
 |---|---|---|
-| Model | `gpt-4.1-mini` | `gpt-4.1-mini` |
+| Model | `gpt-5.4-mini` | `gpt-5.4-mini` |
 | Response format | **JSON object** | **JSON object** |
 | Instructions | paste [`legal_classifier.md`](../../src/labs/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/labs/prompts/drafter.md) |
 | Tools | **none** — see callout below | **none** — see callout below |

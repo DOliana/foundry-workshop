@@ -36,7 +36,7 @@ You need (or your instructor needs on your behalf):
 - **Owner** or **Contributor** on a pre-created Azure resource group
   (`rg-foundry-<initials>`). The Bicep deploys at **resource-group
   scope** — you do **not** need subscription-level rights.
-- A `gpt-4.1-mini` model quota assigned to the chosen region
+- A `gpt-5.4-mini` model quota assigned to the chosen region
   (**Sweden Central** by default). The instructor confirms this
   before the workshop.
 - Optional, for the Lab 04 Voice Live demo: realtime model quota for
@@ -146,7 +146,7 @@ azd env get-values > .env
 Spot-check that at least these keys exist:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
-- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-4.1-mini`)
+- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-5.4-mini`)
 - `AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT` (= `text-embedding-3-small`)
 - `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` (= `gpt-realtime-1.5`, only
   if you enabled the optional realtime deployment)
@@ -166,7 +166,7 @@ Open the URL in your browser. Confirm:
 
 - The project `noclar-assessment` is selected (top-left).
 - Under **My assets → Models + endpoints** you see two deployments:
-  `gpt-4.1-mini` and `text-embedding-3-small`.
+  `gpt-5.4-mini` and `text-embedding-3-small`.
   If you enabled the optional realtime deployment, you also see
   `gpt-realtime-1.5`.
 - Under **Build → Agents** the list is **empty**.

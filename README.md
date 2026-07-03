@@ -49,7 +49,7 @@ foundry-workshop/
   - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) v4
   - Python 3.11+
   - Git
-- **Quota:** the deployment uses **Sweden Central** and requests a *modest* TPM allocation for `gpt-4.1-mini`. If your subscription has no quota there, see [`labs/00-setup/README.md`](labs/00-setup/README.md) for fallback options.
+- **Quota:** the deployment uses **Sweden Central** and requests a *modest* TPM allocation for `gpt-5.4-mini`. If your subscription has no quota there, see [`labs/00-setup/README.md`](labs/00-setup/README.md) for fallback options.
 
 See [`labs/00-setup/README.md`](labs/00-setup/README.md) for the lab-by-lab walkthrough.
 
@@ -86,7 +86,7 @@ This provisions, in **Sweden Central**:
 | Resource | Purpose |
 |---|---|
 | Azure AI Foundry account + project | The hub for all agent work |
-| `gpt-4.1-mini` model deployment | Default chat model (TPM capped to leave room for your own deploys) |
+| `gpt-5.4-mini` model deployment | Default chat model (TPM capped to leave room for your own deploys) |
 | `text-embedding-3-small` model deployment | Embedding model for the Lab 03 hybrid index |
 | Azure AI Search (Basic) | Hybrid (vector + keyword + filter) knowledge base |
 | Storage Account | Sample docs, assessment outputs, function state |

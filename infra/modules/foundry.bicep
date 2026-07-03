@@ -1,9 +1,9 @@
-// Azure AI Foundry account + project + gpt-4.1-mini model deployment
+// Azure AI Foundry account + project + gpt-5.4-mini model deployment
 // Used by: every block. This is the centerpiece of the workshop.
 //
 // Notes:
 //   * Uses the unified AIServices kind (Foundry generation, GA in 2025)
-//   * TPM cap on gpt-4.1-mini is intentionally conservative so participants have
+//   * TPM cap on gpt-5.4-mini is intentionally conservative so participants have
 //     room to deploy additional models manually during Lab 1.
 
 @description('Resource name prefix / resourceToken')
@@ -16,10 +16,10 @@ param location string
 param tags object
 
 @description('Model name for the default deployment')
-param defaultModelName string = 'gpt-4.1-mini'
+param defaultModelName string = 'gpt-5.4-mini'
 
 @description('Model version for the default deployment')
-param defaultModelVersion string = '2025-04-16'
+param defaultModelVersion string = '2026-03-17'
 
 @description('TPM capacity for default model deployment (in thousands). Keep modest to leave room for manual deploys in Lab 1.')
 param defaultModelCapacity int = 20
