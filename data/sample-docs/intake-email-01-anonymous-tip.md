@@ -1,8 +1,10 @@
 ---
-source: anonymous email to audit_committee@helios-industrieanlagen.example
-received: 2026-02-14T09:22:00+01:00
-classification: unverified
+document_id: intake-email-01-anonymous-tip
+document_type: witness-statement
 language: en
+jurisdiction: DE
+effective_date: 2026-02-14
+title: Anonymous tip email — Adriatic Advisory payments
 ---
 
 Subject: Concerning payments via "Adriatic Advisory" — please look into this

@@ -12,13 +12,22 @@
       "value": "${AZURE_PRINCIPAL_ID}"
     },
     "defaultModelCapacity": {
-      "value": "${DEFAULT_MODEL_CAPACITY=20}"
+      "value": "${DEFAULT_MODEL_CAPACITY=50}"
     },
     "defaultModelName": {
       "value": "${DEFAULT_MODEL_NAME=gpt-4.1-mini}"
     },
     "defaultModelVersion": {
-      "value": "${DEFAULT_MODEL_VERSION=2025-04-16}"
+      "value": "${DEFAULT_MODEL_VERSION=2025-04-14}"
+    },
+    "embeddingModelName": {
+      "value": "${EMBEDDING_MODEL_NAME=text-embedding-3-small}"
+    },
+    "embeddingModelVersion": {
+      "value": "${EMBEDDING_MODEL_VERSION=1}"
+    },
+    "embeddingModelCapacity": {
+      "value": "${EMBEDDING_MODEL_CAPACITY=30}"
     }
   }
 }

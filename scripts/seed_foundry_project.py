@@ -1,15 +1,25 @@
 """Idempotent provisioning of the Foundry project for the workshop.
 
-Run AFTER `azd up`. Reads endpoint + names from `azd env get-values`.
+**Instructor-only helper.** Pre-warms an RG end-to-end so participants
+can skip ahead if they fall behind. In the normal workshop flow,
+participants build each artefact themselves:
 
-What it does:
-  1. Uploads the sample-docs folder to the `sample-docs` blob container.
-  2. Creates an Azure AI Search index `noclar-corpus` and ingests sample-docs.
-  3. Creates a Foundry project connection to that Search index.
-  4. Registers the five workshop agents (intake, grounded, legal_classifier,
-     drafter, orchestrator) with their prompts and tools.
+  - Lab 01 creates `noclar-intake` in the portal.
+  - Lab 02 creates `noclar-legal-classifier` + `noclar-drafter`.
+  - Lab 03 runs `python -m src.labs.lab03.ingest_corpus`, creates
+    the AI Search connection, and adds the `noclar-grounded` agent.
+  - Lab 04 adds the `noclar-orchestrator` agent.
 
-Safe to re-run; existing resources are detected and updated.
+This script performs all of the above in one shot:
+
+  - Uploads `data/sample-docs/` to the sample-docs container.
+  - Creates the `noclar-corpus` AI Search index and indexes the corpus.
+  - Creates/updates the five workshop agents (intake, grounded,
+    legal-classifier, drafter, orchestrator) from the prompt files
+    in `src/labs/prompts/`.
+
+Run AFTER `azd provision`. Reads endpoint + names from
+`azd env get-values`.
 """
 
 from __future__ import annotations
@@ -37,7 +47,7 @@ log = logging.getLogger("seed-foundry-project")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SAMPLE_DOCS = REPO_ROOT / "data" / "sample-docs"
-PROMPTS_DIR = REPO_ROOT / "src" / "agents" / "prompts"
+PROMPTS_DIR = REPO_ROOT / "src" / "labs" / "prompts"
 
 INDEX_NAME = "noclar-corpus"
 SEARCH_CONNECTION_NAME = "noclar-search"
@@ -118,7 +128,11 @@ def register_agents(client: AgentsClient, model_deployment: str) -> dict[str, st
     def _instructions(name: str) -> str:
         return (PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8")
 
-    # Map of agent name -> instructions filename + description
+    # Map of agent name -> (instructions filename, description).
+    # All agents use response_format="auto" — the v1 Foundry Agents API
+    # only accepts "auto" on this SDK; the prompts themselves instruct the
+    # JSON-emitting agents (intake, classifier, drafter) to return a single
+    # JSON object, which works reliably with the default sampling.
     specs = {
         "noclar-intake": ("intake", "Guided NOCLAR intake (chat + voice)"),
         "noclar-grounded": ("grounded", "Cited grounding over the NOCLAR corpus"),
@@ -131,22 +145,18 @@ def register_agents(client: AgentsClient, model_deployment: str) -> dict[str, st
     out: dict[str, str] = {}
     for name, (prompt_file, desc) in specs.items():
         instr = _instructions(prompt_file)
+        kwargs: dict = {
+            "model": model_deployment,
+            "instructions": instr,
+            "description": desc,
+            "response_format": "auto",
+        }
         if name in existing:
-            updated = client.update_agent(
-                agent_id=existing[name].id,
-                model=model_deployment,
-                instructions=instr,
-                description=desc,
-            )
+            updated = client.update_agent(agent_id=existing[name].id, **kwargs)
             out[name] = updated.id
             log.info("updated agent %s", name)
         else:
-            agent = client.create_agent(
-                model=model_deployment,
-                name=name,
-                description=desc,
-                instructions=instr,
-            )
+            agent = client.create_agent(name=name, **kwargs)
             out[name] = agent.id
             log.info("created agent %s", name)
     return out
@@ -178,6 +188,17 @@ def main() -> None:
         print(f"  {n}: {i}")
 
     print("\nSeed complete. Open the Foundry portal to inspect the project.")
+    print()
+    print("⚠️  Manual portal follow-up required for the JSON-emitting agents")
+    print("    (noclar-intake, noclar-legal-classifier, noclar-drafter):")
+    print()
+    print("    1. Build → Agents → open the agent.")
+    print("    2. Tools → delete the default Web Search / Grounding entry.")
+    print("       (JSON-object response mode is incompatible with Web Search.)")
+    print("    3. Response format → switch from 'auto' to 'JSON object' → Save.")
+    print()
+    print("    The Foundry v1 Agents SDK only accepts response_format='auto'")
+    print("    on create/update, so the script cannot do steps 2–3 for you.")
 
 
 if __name__ == "__main__":

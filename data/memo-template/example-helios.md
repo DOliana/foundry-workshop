@@ -103,7 +103,7 @@ suspicion with Compliance. Both reports are consistent in substance.
 | # | Action | Owner | Due | Status |
 |---|---|---|---|---|
 | 1 | Extended journal entry testing on account 4710 and related accounts | M. Lehmann | 2026-03-22 | open |
-| 2 | Forensic email analysis Petrović ↔ Marić (coordinated with Helios Legal) | external IT forensics team | 2026-04-05 | open |
+| 2 | Forensic email analysis Petrović ↔ Marić (coordinated with Helios Legal) | external IT forensic specialists | 2026-04-05 | open |
 | 3 | In-depth interview with Petrović (with external legal counsel) | Dr. Hartmann | 2026-03-25 | open |
 | 4 | Briefing of the Audit Committee and Helios Supervisory Board | Dr. Hartmann | 2026-03-15 | open |
 | 5 | Assessment of reporting obligations (§ 138 AO, possibly § 261 StGB money laundering) | external legal counsel | 2026-03-20 | open |

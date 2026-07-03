@@ -11,13 +11,25 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 
-def _maybe_load_dotenv() -> None:
+def load_env() -> None:
+    """Best-effort load of `.env` into `os.environ`.
+
+    Lab 00 writes `.env` via `azd env get-values > .env` but never sources
+    it. Every lab entrypoint calls this (directly or transitively via
+    `src/labs/__init__.py`) so the file is picked up automatically. Safe
+    to call repeatedly; `load_dotenv()` is idempotent and a no-op when no
+    `.env` is present.
+    """
     try:
         from dotenv import load_dotenv  # type: ignore
 
         load_dotenv()
     except ImportError:
         pass
+
+
+# Backwards-compatible alias.
+_maybe_load_dotenv = load_env
 
 
 @dataclass(frozen=True)
@@ -33,12 +45,13 @@ class Settings:
     sample_docs_container: str
     reviewer_queue_name: str
     appinsights_connection_string: str | None
-    acs_endpoint: str | None
+    foundry_embedding_deployment: str | None
+    foundry_realtime_deployment: str | None
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    _maybe_load_dotenv()
+    load_env()
 
     def _required(name: str) -> str:
         v = os.environ.get(name)
@@ -60,5 +73,6 @@ def get_settings() -> Settings:
         sample_docs_container=os.environ.get("SAMPLE_DOCS_CONTAINER", "sample-docs"),
         reviewer_queue_name=os.environ.get("REVIEWER_QUEUE_NAME", "reviewer-inbox"),
         appinsights_connection_string=os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING"),
-        acs_endpoint=os.environ.get("AZURE_COMMUNICATION_SERVICES_ENDPOINT"),
+        foundry_embedding_deployment=os.environ.get("AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT"),
+        foundry_realtime_deployment=os.environ.get("AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT"),
     )

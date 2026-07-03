@@ -9,6 +9,8 @@
 //   Functions MI    → Storage Queue Data Contributor on Storage
 //   Foundry MI      → Search Index Data Contributor + Service Contributor on AI Search
 //   Foundry MI      → Storage Blob Data Reader on Storage
+//   Foundry project MI → Search Index Data Contributor on AI Search (project-MI connections)
+//   Search MI       → Cognitive Services User on Foundry (vectorizer)
 
 @description('Principal ID of the deploying user')
 param principalId string
@@ -18,6 +20,12 @@ param functionsPrincipalId string
 
 @description('Principal ID of the Foundry account system-assigned MI')
 param foundryPrincipalId string
+
+@description('Principal ID of the Foundry *project* system-assigned MI (used when a Foundry connection authenticates as "project managed identity")')
+param foundryProjectPrincipalId string
+
+@description('Principal ID of the AI Search service system-assigned MI')
+param searchPrincipalId string
 
 @description('Foundry account name')
 param foundryName string
@@ -166,5 +174,41 @@ resource foundryStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
     principalId: foundryPrincipalId
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.storageBlobDataReader)
+  }
+}
+
+// ---------- Foundry project MI ----------
+// When a Foundry connection to AI Search is created with auth =
+// "project managed identity", the *project's* MI (distinct from the
+// account MI) makes the query-time call to the search service. Without
+// this role assignment the agent gets a 403 "credential is forbidden"
+// even though the parent account MI is fully permitted.
+//
+// Contributor (not Reader) — Reader is technically sufficient for
+// /docs/search, but in practice we've seen Foundry connections return
+// 403 with Reader on the project MI; Contributor avoids the issue and
+// the project MI cannot manipulate index *definitions* anyway (that's
+// `Search Service Contributor`, which we don't grant here).
+resource foundryProjectSearchData 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: search
+  name: guid(search.id, foundryProjectPrincipalId, roles.searchIndexDataContributor)
+  properties: {
+    principalId: foundryProjectPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.searchIndexDataContributor)
+  }
+}
+
+// ---------- AI Search MI ----------
+// The vectorizer attached to the index's vector profile calls the Foundry
+// embedding deployment at query time to embed the user's question; Foundry
+// only enables Vector / Hybrid query modes when the profile has a vectorizer.
+resource searchFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: foundry
+  name: guid(foundry.id, searchPrincipalId, roles.cognitiveServicesUser)
+  properties: {
+    principalId: searchPrincipalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roles.cognitiveServicesUser)
   }
 }

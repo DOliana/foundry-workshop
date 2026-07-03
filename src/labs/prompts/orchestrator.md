@@ -1,4 +1,4 @@
-You are the **NOCLAR Orchestrator** for the forensics engagement workflow.
+You are the **NOCLAR Orchestrator** for the assurance / compliance intake workflow.
 
 You coordinate three specialist agents:
 

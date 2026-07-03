@@ -1,6 +1,6 @@
 # Azure AI Foundry — Hands-On Workshop
 
-A hands-on workshop exploring the core capabilities of **Azure AI Foundry** through a realistic forensics scenario: building an AI-assisted document intake and assessment workflow.
+A hands-on workshop exploring the core capabilities of **Azure AI Foundry** through a realistic assurance / compliance scenario: building an AI-assisted document intake and assessment workflow.
 
 > The scenario (a compliance intake process) is the vehicle — the goal is hands-on experience with the platform capabilities: multi-agent orchestration, document grounding, voice interaction, custom integration, and evaluation.
 
@@ -27,7 +27,7 @@ foundry-workshop/
 ├── infra/                  Bicep infrastructure (azd)
 ├── src/
 │   ├── functions/          Python Azure Functions app
-│   ├── agents/             Microsoft Agent Framework agents + tools
+│   ├── labs/               Lab code (one folder per block) + shared agent prompts
 │   ├── voice/              Voice Live SDK demo
 │   └── shared/             Schemas, config helpers
 ├── data/
@@ -51,17 +51,35 @@ foundry-workshop/
   - Git
 - **Quota:** the deployment uses **Sweden Central** and requests a *modest* TPM allocation for `gpt-4.1-mini`. If your subscription has no quota there, see [`labs/00-setup/README.md`](labs/00-setup/README.md) for fallback options.
 
-See [`PARTICIPANT-SETUP.md`](PARTICIPANT-SETUP.md) for the 1-page quickstart.
+See [`labs/00-setup/README.md`](labs/00-setup/README.md) for the lab-by-lab walkthrough.
 
 ---
 
 ## Deploy the infrastructure
 
+The Bicep targets a **resource group** (not a subscription). Pre-create
+the RG, then provision into it:
+
 ```bash
 azd auth login
-azd env new noclar-<yourinitials>
-azd up
+./scripts/provision-rg.sh -g rg-foundry-<yourinitials> -l swedencentral
+# or, on Windows:
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<yourinitials> -Location swedencentral
 ```
+
+The script is intentional for the workshop flow. It creates or reuses the
+participant RG, sets `AZURE_RESOURCE_GROUP` in the `azd` environment, and
+then runs `azd provision` against that RG. This keeps Lab 00 infrastructure-only:
+resources are created, but the Functions app code declared in `azure.yaml` is
+not deployed until the later integration labs.
+
+If you are doing a solo dry run and want the full application deployed in one
+step, `azd up` may be fine after selecting the right subscription and resource
+group. For participant setup, use the provision script so the deployment stays
+inside the assigned RG and follows the staged lab flow.
+
+The instructor then grants per-participant data-plane roles inside
+the RG with [`scripts/postdeploy-rbac.{ps1,sh}`](scripts/postdeploy-rbac.ps1).
 
 This provisions, in **Sweden Central**:
 
@@ -69,7 +87,8 @@ This provisions, in **Sweden Central**:
 |---|---|
 | Azure AI Foundry account + project | The hub for all agent work |
 | `gpt-4.1-mini` model deployment | Default chat model (TPM capped to leave room for your own deploys) |
-| Azure AI Search (Basic) | Knowledge base behind Foundry IQ |
+| `text-embedding-3-small` model deployment | Embedding model for the Lab 03 hybrid index |
+| Azure AI Search (Basic) | Hybrid (vector + keyword + filter) knowledge base |
 | Storage Account | Sample docs, assessment outputs, function state |
 | Azure Functions (Flex, Python 3.11) | Persistence + governance logging + reviewer routing |
 | Azure Communication Services | Voice Live SDK demo |

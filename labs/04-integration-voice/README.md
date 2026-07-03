@@ -1,102 +1,150 @@
 # Lab 04 — Voice Interaction & Custom Integration
 
-**Block 4 · 14:45 – 16:00 (50 min lab)**
-**Outcome:** The pre-deployed Functions are wired as agent tools, the reviewer queue carries an end-to-end approval, and you have done a short live voice intake.
+**Duration:** 60 minutes (Block 4)
+**Outcome:** Attach **Azure Functions as agent tools**
+(the canonical place for this per the agenda), connect the agent to a
+**Microsoft Learn MCP server** to demonstrate dynamic tool discovery,
+write a **small custom function tool** of your own, and then watch
+an **instructor-led Voice Live demo** that reuses the same agent over
+voice.
+
+The voice piece is a **demo**, not an individual build — you watch.
+Instructor prep is in [`INSTRUCTOR.md`](./INSTRUCTOR.md).
 
 ---
 
-## Why this matters
+## 1. Uncomment the per-lab files (5 min)
 
-A useful NOCLAR agent needs to reach beyond the model:
-
-- **Functions as tools** — persist results, write the governance log, route HITL requests.
-- **Voice** — many intake conversations happen on the phone; the same agent must work in that channel without re-training.
-- **MCP** — dynamic tool discovery so we don't have to redeploy every time a new internal API appears.
-
-## Pre-conditions
-
-- Labs 00–03 done.
-- `azd deploy functions` has been run (or `./scripts/deploy-functions.ps1`).
-
-## Steps
-
-### 1. Confirm the Functions are live (5 min)
+| File | Purpose |
+|---|---|
+| `src/functions/log_request.py` | Governance-logging Function (Lab 04's home). |
+| `src/functions/function_app.py` | Uncomment the `log_request` blueprint registration. |
+| `src/labs/lab04/mcp_attach.py` | Prints the Learn MCP URL; can probe `list_tools`. |
+| `src/labs/lab04/custom_tool.py` | Stub for your own function tool. |
 
 ```bash
-$host = (azd env get-value AZURE_FUNCTION_APP_HOSTNAME).Trim()
-curl "https://$host/api/log_request" -X POST -H "content-type: application/json" -d '{"channel":"chat","conversation_id":"test-001"}'
+python -m py_compile src/functions/log_request.py src/labs/lab04/*.py
+azd deploy functions
 ```
 
-Expect HTTP 201 with a `log_blob` path. Confirm the blob lands in Storage:
+After deploy, the Functions app exposes `log_request` alongside the
+Lab 02 handlers.
+
+## 2. Attach `log_request` as an OpenAPI tool on `noclar-intake` (10 min)
+
+In the Foundry portal:
+
+1. **Agents → noclar-intake → Tools → + Add → OpenAPI 3.0 specified
+   tool.**
+2. Paste [`src/functions/openapi-intake.json`](../../src/functions/openapi-intake.json).
+3. Replace the `servers[0].url` placeholder with your Functions
+   hostname (`echo $AZURE_FUNCTION_APP_HOSTNAME`).
+4. **Authentication:** API key → header → `x-functions-key` →
+   paste the key from `az functionapp keys list`.
+5. **Save**, then in the Playground send one combined intake
+   message (`client_name:` line + tip paragraph in a single send —
+   same contract as Lab 01, same contract as Lab 02 orchestrator).
+   Include the word **"json"** in the prompt (e.g. start with
+   `Extract the IntakeFacts JSON from the intake below.`) — JSON
+   response-format mode requires it in the user message.
+6. Storage → `logs` container → a new log blob appears.
+
+> **What just happened.** A Foundry agent now calls one of *your*
+> HTTP endpoints as a typed tool. The OpenAPI doc is the wire
+> contract; the function key is the auth.
+
+## 3. Build an LLM-driven orchestrator agent (10 min)
+
+The Lab 02 orchestrator is deterministic Python. The same Functions
+can also be driven by an **LLM-driven agent** for contrast.
+
+1. **+ New agent** → `noclar-orchestrator` → `gpt-4.1-mini`.
+2. Paste [`src/labs/prompts/orchestrator.md`](../../src/labs/prompts/orchestrator.md).
+3. **Tools → + Add → OpenAPI 3.0 specified tool** →
+   [`src/functions/openapi-orchestrator.json`](../../src/functions/openapi-orchestrator.json)
+   — same host + function-key flow.
+4. Playground: ask it to draft + persist a tiny memo. Watch it call
+   `persist_assessment` then `notify_reviewer` in sequence.
+
+> **Same Functions, different driver.** Lab 02's Python orchestrator
+> picks tool calls deterministically; this agent picks them with the
+> model. Both arrive at the same audit trail.
+
+## 4. Connect an MCP server (10 min)
+
+1. **Agents → noclar-orchestrator → Tools → + Add → MCP server.**
+2. **URL:** `https://learn.microsoft.com/api/mcp` (Microsoft Learn
+   MCP server).
+3. **Save.**
+4. Playground: ask *"How do I declare a queue trigger in an Azure
+   Functions Python v2 blueprint?"* — observe Learn-MCP tools being
+   discovered and called dynamically. No redeploy. No Bicep change.
+
+Optional probe from the CLI:
 
 ```bash
-$account = (azd env get-value AZURE_STORAGE_ACCOUNT).Trim()
-az storage blob list --account-name $account --container-name logs --auth-mode login --query "[].name" -o tsv
+python -m src.labs.lab04.mcp_attach --probe
 ```
 
-### 2. Register the Functions as tools on the orchestrator (10 min)
+## 5. Write a custom function tool (10 min)
 
-The `noclar-orchestrator` already has function-tool *signatures* from the seed script. Verify by opening **Agents → noclar-orchestrator → Tools** in the portal — you should see:
+Open
+[`src/labs/lab04/custom_tool.py`](../../src/labs/lab04/custom_tool.py).
+Pick **one** scenario:
 
-- `log_request`
-- `persist_assessment`
-- `notify_reviewer`
+- **Scenario A:** `check_sanctions_list(name) -> bool` — returns
+  True for a small hard-coded list of counter-parties.
+- **Scenario B:** `lookup_engagement(engagement_id) -> dict` —
+  returns stub engagement metadata.
 
-If any are missing, re-run `python scripts/seed_foundry_project.py`.
+Uncomment the matching block and fill in the body. Then either:
 
-### 3. End-to-end reviewer flow (10 min)
+- Register it as a **local function tool** through Agent Framework
+  for a fast turnaround, or
+- Deploy it as a new Functions Blueprint and attach via OpenAPI
+  (mirror the steps in §2).
 
-Re-run the Lab 02 orchestrator script. After approving the memo, watch the reviewer queue process the notification:
+Trigger it from the Playground or a Python smoke script.
 
-```bash
-$logws = (azd env get-value AZURE_LOG_ANALYTICS_WORKSPACE_NAME).Trim()
-az monitor log-analytics query -w $logws --analytics-query "traces | where message has 'Reviewer queue received' | take 10"
-```
+## 6. Voice Live demo (10 min — instructor)
 
-You should see your reviewer payload logged by the `process_reviewer` queue trigger.
+> **Prereq:** AAD auth to Voice Live requires two roles on the
+> Foundry account (`Cognitive Services User` + `Azure AI User`).
+> `scripts/postdeploy-rbac.{ps1,sh}` from Lab 00 grants both. The
+> demo connects directly to the realtime *deployment*
+> (`gpt-realtime-1.5`) — no separate `noclar-voice-intake` agent
+> needed. See [`INSTRUCTOR.md`](./INSTRUCTOR.md).
+>
+> **Env:** `_log_request` reads `AZURE_FUNCTION_KEY` from `.env`
+> (auto-loaded on import). The key is appended to `.env` in
+> [Lab 02 §4](../02-orchestration-hitl/README.md#4-set-up-the-venv-and-env-vars-3-min);
+> if you skipped Lab 02, append it now or the governance log call
+> will silently no-op.
 
-### 4. Add a new function tool yourself (15 min)
+Watch. The instructor:
 
-Pick one of:
+1. Runs `python -m src.voice.voice_agent_demo`.
+2. Speaks the workshop opening line into the mic.
+3. The voice agent calls `log_request` (channel=`voice`) and
+   responds in speech.
+4. The new trace populates Live Metrics on the
+   second screen.
 
-- `check_sanctions_list(name: str)` — returns `True` if a person/company is on a configured list.
-- `lookup_engagement(engagement_id: str)` — returns engagement metadata.
+If voice fails (regional outage, network block, microphone), the
+instructor plays the fallback recording from
+[`INSTRUCTOR.md`](./INSTRUCTOR.md).
 
-Implementation hint:
-
-1. Add a Python function in `src/functions/function_app.py`.
-2. Re-deploy with `./scripts/deploy-functions.ps1`.
-3. Add a corresponding wrapper in `src/agents/tools/functions_tools.py`.
-4. In the portal, attach the new tool to `noclar-orchestrator`.
-5. Ask the orchestrator a question that should trigger it.
-
-### 5. Voice intake demo (10 min)
-
-> This is a demo, not an individual build. Watch the instructor first, then try.
-
-Instructor (or one volunteer) runs:
-
-```bash
-pip install -r src/voice/requirements.txt
-python -m src.voice.voice_agent_demo
-```
-
-Speak the same opening line as in Lab 01. The voice agent:
-
-- Calls `log_request` (channel="voice") — confirm with a tail of the `logs/` container.
-- Reads back what it heard.
-- Asks the next intake question.
-
-> If the voice SDK is unavailable in your subscription region, the instructor will substitute a recording.
+---
 
 ## ✅ Done when
 
-- [ ] You have called `log_request` over HTTP and seen a blob land.
-- [ ] You have observed the reviewer queue process at least one message.
-- [ ] You have added one new function tool and triggered it from the agent.
-- [ ] You have heard the voice demo end-to-end.
-
-## Discussion
-
-- The voice channel reuses the same agent definition. What does this imply for how prompts must be written?
-- How would you persist a structured voice intake — same `persist_assessment` Function, or a different ingestion path?
+- [ ] `log_request` is deployed and attached as an OpenAPI tool on
+      `noclar-intake`. A new log blob appears per intake.
+- [ ] `noclar-orchestrator` exists, with `persist_assessment` and
+      `notify_reviewer` as OpenAPI tools.
+- [ ] The Learn MCP server is attached and you successfully
+      triggered a Learn-MCP tool call.
+- [ ] Your custom function tool runs from the Playground or a
+      scripted call.
+- [ ] You watched the voice demo and saw the trace appear in App
+      Insights.

@@ -63,3 +63,4 @@ desktop.ini
 *.key
 *.pfx
 secrets.json
+.devcontainer/devcontainer-lock.json

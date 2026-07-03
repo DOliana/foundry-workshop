@@ -1,9 +1,10 @@
 ---
-type: payment-ledger-extract
-account: 4710 — External advisory services
-period: 2024-11 to 2025-12
-currency: EUR
+document_id: payment-ledger-extract
+document_type: ledger
 language: en
+jurisdiction: DE
+effective_date: 2025-12-31
+title: Ledger extract — account 4710 / Adriatic Advisory d.o.o.
 ---
 
 # Ledger extract — Account 4710 / Adriatic Advisory d.o.o.

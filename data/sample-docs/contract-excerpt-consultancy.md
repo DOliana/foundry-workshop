@@ -1,13 +1,10 @@
 ---
-type: contract-excerpt
-parties:
-  - Helios Industrieanlagen GmbH (Stuttgart, DE)
-  - Adriatic Advisory d.o.o. (Split, HR)
-effective: 2024-11-01
-duration_months: 24
-total_value_eur: 1200000
-classification: internal-use-only
+document_id: contract-excerpt-consultancy
+document_type: contract
 language: en
+jurisdiction: HR
+effective_date: 2024-11-01
+title: Consultancy Services Agreement (excerpt)
 ---
 
 # Excerpt — Consultancy Services Agreement

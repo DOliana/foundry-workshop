@@ -1,9 +1,10 @@
 ---
-source: internal mail to compliance@helios-industrieanlagen.example
-sender: m.schneider@helios-industrieanlagen.example
-received: 2026-02-19T16:48:00+01:00
-classification: identified-internal
+document_id: intake-email-02-internal-whistleblower
+document_type: witness-statement
 language: en
+jurisdiction: DE
+effective_date: 2026-02-19
+title: Internal whistleblower email — possible irregularities in SEE sales
 ---
 
 Subject: Possible irregularities in SEE sales
