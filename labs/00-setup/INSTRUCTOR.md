@@ -44,6 +44,43 @@ For the default deployment, keep [`infra/main.bicep`](../../infra/main.bicep),
 the returned `model.name` and `model.version`. For Sweden Central, the current
 workshop default is `gpt-5.4-mini` version `2026-03-17`.
 
+### Required model capabilities
+
+If the default models are unavailable, choose replacements by capability, not
+by name alone:
+
+| Workshop use | Required catalog capabilities | Current default |
+| --- | --- | --- |
+| Hosted Foundry agents, JSON responses, orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` | `gpt-5.4-mini` `2026-03-17` |
+| Lab 03 vector embeddings | `embeddings=true` | `text-embedding-3-small` `1` |
+| Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech | `gpt-realtime-1.5` `2026-02-23` |
+
+Find candidate chat/agent models:
+
+```bash
+az cognitiveservices model list -l swedencentral --query "sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard') && model.capabilities.agentsV2=='true' && model.capabilities.chatCompletion=='true' && model.capabilities.responses=='true'], &model.name)[].{name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
+
+Find candidate embedding models:
+
+```bash
+az cognitiveservices model list -l swedencentral --query "sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard') && model.capabilities.embeddings=='true'], &model.name)[].{name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
+
+Find candidate realtime voice models:
+
+```bash
+az cognitiveservices model list -l swedencentral --query "sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard') && model.capabilities.realtime=='true' && starts_with(model.name, 'gpt-realtime')], &model.name)[].{name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
+
+Quota is exposed separately from catalog capabilities. For OpenAI-format models,
+quota rows commonly use `OpenAI.GlobalStandard.<model-name>` even when the
+deployment account kind is `AIServices`:
+
+```bash
+az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(name.value, 'OpenAI.GlobalStandard.') || starts_with(name.value, 'AIServices.GlobalStandard.')], &name.value)[].{name:name.value,current:currentValue,limit:limit,unit:unit}" -o table
+```
+
 1. **Pre-create one resource group per participant** if you want to
    avoid the in-room RG-create step:
 

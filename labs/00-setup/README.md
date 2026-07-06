@@ -208,3 +208,35 @@ az cognitiveservices model list -l swedencentral --query "sort_by(sort_by([?kind
 
 In that output, model identifiers live under `model.name` and
 `model.version`.
+
+For workshop substitutions, match capabilities as well as name and
+version:
+
+| Workshop use | Required catalog capabilities |
+| --- | --- |
+| Hosted Foundry agents and orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` |
+| Lab 03 vector embeddings | `embeddings=true` |
+| Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech |
+
+This command will show how much quota is available for each model:
+
+```bash
+az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(name.value, 'OpenAI.GlobalStandard.') || starts_with(name.value, 'AIServices.GlobalStandard.')], &name.value)[].{name:name.value,current:currentValue,limit:limit,unit:unit}" -o table
+```
+
+### potential fallback models
+
+- gpt-5.4-mini / 2026-03-17
+- gpt-5-mini / 2025-08-07
+- gpt-5-nano / 2025-08-07
+- gpt-5 / 2025-08-07
+- gpt-5.4 / 2026-03-05
+
+Set the  alternave model.
+
+```bash
+azd env set DEFAULT_MODEL_NAME gpt-5-mini
+azd env set DEFAULT_MODEL_VERSION 2025-08-07
+```
+
+Rerun the provision command after setting the variabls.
