@@ -90,6 +90,8 @@ Explorer**.
 
 ## 3. Feel the difference in Search Explorer (5 min)
 
+Go to the azure portal, move into your resource group andselect the search service instance. Go to indexes, select the index `noclar-corpus` and you will be in search explorer.
+
 Run these three queries in **Search Explorer**:
 
 | Query | What it tests |
@@ -209,15 +211,13 @@ PDF / DOCX / image input. The repo ships
 1. Open <https://contentunderstanding.ai.azure.com/> and pick your
    Foundry project (the picker in the top right uses the same project
    list as `ai.azure.com`).
-2. **Analyzers → + New analyzer**.
-3. **Source type:** *Document*.
-4. **Upload sample:** `data/sample-docs/contract-excerpt-consultancy.pdf`.
+2. **Build** → "new project", select a name and leave the defaults.
+3. **Analyzers → + New analyzer**.
+4. **Source type:** *Document*.
+5. **Upload sample:** `data/sample-docs/contract-excerpt-consultancy.pdf`.
    The portal needs a sample *before* you can define a schema —
    that's the intended UX, the schema editor previews extraction
    against the sample as you go.
-5. **Name:** `consultancycontract` (no hyphen — the portal silently
-   strips non-alphanumerics, and our §8 code looks the ID up
-   verbatim).
 6. **Define the schema** — add these six fields (start from a blank
    schema; the portal's "suggest schema" autopilot is optional and
    tends to over-generate):
@@ -231,16 +231,9 @@ PDF / DOCX / image input. The repo ships
    | `deliverable_required_before_payment` | String | `"yes"` / `"no"` / `"unclear"`. |
    | `governing_law` | String | Jurisdiction name. |
 
-7. **Test** — the panel on the right shows the extracted JSON over
-   your uploaded sample. Iterate on the field descriptions if a value
-   comes back wrong; descriptions are the prompt.
-8. **Build analyzer** — click the **Build analyzer** button (top right
-   of the schema editor). This is what actually registers the
-   analyzer ID on the Foundry account so it's callable from code; up
-   to this point you've only been previewing against the sample.
-   Wait for the status to flip to *Ready* (10–30 s).
-9. **Save.** The portal will offer a one-click *"View code"* sample —
-   our §8 helper already encodes the same call, so you can close it.
+7. **Test** — the panel on the right shows the extracted JSON over your uploaded sample. Iterate on the field descriptions if a value comes back wrong; descriptions are the prompt.
+8. **Build analyzer** — click the **Build analyzer** button (top right of the schema editor). **Name:** `consultancycontract` (no hyphen — the portal silently strips non-alphanumerics, and our §8 code looks the ID up verbatim). This is what actually registers the analyzer ID on the Foundry account so it's callable from code; up to this point you've only been previewing against the sample. Wait for the status to flip to *Ready* (10–30 s).
+9.  **Save.** The portal will offer a one-click *"View code"* sample — our §8 helper already encodes the same call, so you can close it.
 
 ## 7. Compare RAG vs extraction (5 min)
 

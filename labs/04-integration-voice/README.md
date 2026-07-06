@@ -36,18 +36,38 @@ In the Foundry portal:
 
 1. **Agents → noclar-intake → Tools → + Add → OpenAPI 3.0 specified
    tool.**
-2. Paste [`src/functions/openapi-intake.json`](../../src/functions/openapi-intake.json).
-3. Replace the `servers[0].url` placeholder with your Functions
-   hostname (`echo $AZURE_FUNCTION_APP_HOSTNAME`).
-4. **Authentication:** API key → header → `x-functions-key` →
-   paste the key from `az functionapp keys list`.
-5. **Save**, then in the Playground send one combined intake
+2. name: `log_request`, 
+   description: Governance audit logging tool for the NOCLAR intake agent. Call `log_request` at the start of each chat or voice conversation to write a JSON audit entry to the workshop Storage account `logs` container.
+3. Paste [`src/functions/openapi-intake.json`](../../src/functions/openapi-intake.json).
+4. Replace the `servers[0].url` placeholder with your Functions
+   hostname (`azd env get-value AZURE_FUNCTION_APP_HOSTNAME`).
+5. **Authentication:** Set Authentication method to connection and create a new connection. set credential to `x-functions-key` and paste the Functions key as value. Get theresource group and Function App
+   name from your `azd` environment, then list the default key:
+
+   bash:
+
+   ```bash
+   RG=$(azd env get-value AZURE_RESOURCE_GROUP)
+   APP=$(azd env get-value AZURE_FUNCTION_APP_NAME)
+   az functionapp keys list -g "$RG" -n "$APP" \
+     --query "functionKeys.default" -o tsv
+   ```
+
+   PowerShell:
+
+   ```powershell
+   $rg = (azd env get-value AZURE_RESOURCE_GROUP).Trim()
+   $app = (azd env get-value AZURE_FUNCTION_APP_NAME).Trim()
+   az functionapp keys list -g $rg -n $app `
+     --query "functionKeys.default" -o tsv
+   ```
+6. **Save**, then in the Playground send one combined intake
    message (`client_name:` line + tip paragraph in a single send —
    same contract as Lab 01, same contract as Lab 02 orchestrator).
    Include the word **"json"** in the prompt (e.g. start with
    `Extract the IntakeFacts JSON from the intake below.`) — JSON
    response-format mode requires it in the user message.
-6. Storage → `logs` container → a new log blob appears.
+7. Storage → `logs` container → a new log blob appears.
 
 > **What just happened.** A Foundry agent now calls one of *your*
 > HTTP endpoints as a typed tool. The OpenAPI doc is the wire
