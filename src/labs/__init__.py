@@ -17,7 +17,7 @@ Per-lab subpackages (each ships fully commented; uncommented by the lab):
   * `lab04.custom_tool`          — stub for your own function tool
   * `lab05.run_eval`             — SDK-driven groundedness/relevance run
 
-The hosted Foundry agents (`noclar-intake`, `noclar-legal-classifier`,
+The Foundry agents (`noclar-intake`, `noclar-legal-classifier`,
 `noclar-drafter`, `noclar-grounded`, `noclar-orchestrator`) are created
 in the portal during Labs 01–04, or in one shot by
 `scripts/seed_foundry_project.py` for instructor pre-warming.

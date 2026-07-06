@@ -2,7 +2,7 @@
 
 # Reads every Markdown file under `data/sample-docs/`, parses its YAML
 # front-matter for structured metadata, chunks the body by paragraph,
-# embeds each chunk with the Foundry-hosted embedding deployment, and
+# embeds each chunk with the Foundry embedding deployment, and
 # uploads the documents to an Azure AI Search index `noclar-corpus`.
 
 # The index uses a **hybrid** schema — keyword (BM25) on `chunk_text`,

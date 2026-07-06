@@ -57,7 +57,7 @@ the picker hides the Hybrid + semantic option.
 | `src/labs/lab03/ground_query.py` | Hybrid query CLI. |
 
 ```bash
-python -m py_compile src/labs/lab03/*.py
+python -m compileall -q src/labs/lab03
 pip install -r src/labs/lab03/requirements.txt
 ```
 
@@ -315,7 +315,7 @@ What the helper does under the hood:
 That's the loop in production: extraction agents drop deterministic
 fields into `documented_facts`, intake & RAG fill in context, the
 human still approves at the HITL gate. Lab 04 takes the next step
-and wires extractors as **hosted agent tools** so the orchestrator
+and wires extractors as **foundry agent tools** so the orchestrator
 doesn't even need to know which extractor ran.
 
 ---

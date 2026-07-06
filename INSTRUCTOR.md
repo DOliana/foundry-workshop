@@ -51,7 +51,7 @@ by name alone:
 
 | Workshop use | Required catalog capabilities | Current default |
 | --- | --- | --- |
-| Hosted Foundry agents, JSON responses, orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` | `gpt-5-mini` `2025-08-07` |
+| Foundry agents, JSON responses, orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` | `gpt-5-mini` `2025-08-07` |
 | Lab 03 vector embeddings | `embeddings=true` | `text-embedding-3-small` `1` |
 | Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech | `gpt-realtime-1.5` `2026-02-23` |
 

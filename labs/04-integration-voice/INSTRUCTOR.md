@@ -58,7 +58,7 @@ roles Voice Live requires: `Cognitive Services User` and
 
 > The audience-facing pitch ("same agent, different channel") still
 > holds: it's the same prompt and the same realtime deployment that
-> back Lab 02's hosted agent for its chat channel. When a real
+> back Lab 02's foundry agent for its chat channel. When a real
 > product wires voice into the orchestrator, a back-end transcript
 > handler hands the verbatim transcript to `noclar-intake` (JSON
 > mode) for structured extraction. The voice loop's job is just the

@@ -1,6 +1,6 @@
 # """Lab 02 — local Python orchestrator (simplified 2-turn intake).
 
-# Drives three hosted Foundry sub-agents (`noclar-intake`,
+# Drives three Foundry sub-agents (`noclar-intake`,
 # `noclar-legal-classifier`, `noclar-drafter`) through a 2-turn intake,
 # two HITL approvals in the terminal, and a final persistence call that is
 # rejected (HTTP 409) when the HITL gate is bypassed.
@@ -314,7 +314,7 @@
 
 #     async with DefaultAzureCredential() as credential:
 #         async with AIProjectClient(endpoint=project_endpoint, credential=credential) as projects:
-#             _hdr("Resolving hosted Foundry agents")
+#             _hdr("Resolving Foundry agents")
 #             intake = FoundryAgent(project_client=projects, agent_name=INTAKE_AGENT)
 #             classifier = FoundryAgent(project_client=projects, agent_name=CLASSIFIER_AGENT)
 #             drafter = FoundryAgent(project_client=projects, agent_name=DRAFTER_AGENT)

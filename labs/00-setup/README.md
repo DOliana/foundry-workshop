@@ -214,7 +214,7 @@ version:
 
 | Workshop use | Required catalog capabilities |
 | --- | --- |
-| Hosted Foundry agents and orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` |
+| Foundry agents and orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` |
 | Lab 03 vector embeddings | `embeddings=true` |
 | Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech |
 

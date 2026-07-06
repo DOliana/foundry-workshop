@@ -2,7 +2,7 @@
 
 **Duration:** 60 minutes (Block 2)
 **Outcome:** A **local Python orchestrator** (Microsoft Agent
-Framework) drives three hosted Foundry sub-agents — `noclar-intake`,
+Framework) drives three Foundry sub-agents — `noclar-intake`,
 `noclar-legal-classifier`, `noclar-drafter` — through a **2-turn
 intake**, two HITL approvals in your terminal, and a final
 persistence call. When the HITL gate is bypassed, the persistence
@@ -13,10 +13,10 @@ Function returns **HTTP 409** — defense in depth.
 ## What is happening and why
 
 ```
-   you ─type─► orchestrator ─►  noclar-intake          (hosted agent)
-                              ─►  noclar-legal-classifier (hosted agent)
+   you ─type─► orchestrator ─►  noclar-intake          (foundry agent)
+                              ─►  noclar-legal-classifier (foundry agent)
                               ─►  HITL #1 in terminal
-                              ─►  noclar-drafter        (hosted agent)
+                              ─►  noclar-drafter        (foundry agent)
                               ─►  HITL #2 in terminal
                               ─►  persist_assessment    (Azure Function)
                               ─►  notify_reviewer       (Azure Function)
@@ -55,7 +55,7 @@ comment) flips the whole block in one shot.
 Compile-check then deploy the Functions code:
 
 ```bash
-python -m py_compile src/functions/*.py src/labs/lab02/*.py
+python -m compileall -q src/functions src/labs/lab02
 azd deploy functions
 ```
 

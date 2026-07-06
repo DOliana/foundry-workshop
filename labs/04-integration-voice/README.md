@@ -23,7 +23,7 @@ Instructor prep is in [`INSTRUCTOR.md`](./INSTRUCTOR.md).
 | `src/labs/lab04/custom_tool.py` | Stub for your own function tool. |
 
 ```bash
-python -m py_compile src/functions/log_request.py src/labs/lab04/*.py
+python -m compileall -q src/functions/log_request.py src/labs/lab04
 azd deploy functions
 ```
 

@@ -2,7 +2,7 @@
 
 # Issues a hybrid Azure AI Search query (text + vector + optional
 # structured `$filter`), prints the top-k chunks with their scores, then
-# runs the same query through the hosted `noclar-grounded` agent and
+# runs the same query through the Foundry `noclar-grounded` agent and
 # prints its cited answer.
 
 # Ships **fully commented**. Lab 03 step 1 uncomments this file.

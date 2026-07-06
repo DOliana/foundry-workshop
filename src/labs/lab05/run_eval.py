@@ -1,6 +1,6 @@
 # """Lab 05 — SDK-based evaluation against `noclar-grounded`.
 
-# Reads `data/eval/grounding-citations.jsonl`, calls the hosted
+# Reads `data/eval/grounding-citations.jsonl`, calls the Foundry
 # `noclar-grounded` agent once per row, scores each response with the
 # `azure-ai-evaluation` `GroundednessEvaluator` and `RelevanceEvaluator`,
 # and writes results to `data/eval/results-<timestamp>.json`.

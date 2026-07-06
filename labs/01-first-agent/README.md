@@ -66,7 +66,7 @@ Top-left: the project `noclar-assessment` is selected. Under
 - **Knowledge:** none
 - **Save**
 
-> **What just happened.** Foundry created a hosted resource you can
+> **What just happened.** Foundry created an agent resource you can
 > address by name. You did not start a container, you did not write
 > code, you did not deploy anything. The agent runs in the project
 > and inherits the project's managed identity, tracing and content

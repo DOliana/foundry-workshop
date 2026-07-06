@@ -1,5 +1,5 @@
 # Lab 02 orchestrator (local Python, Microsoft Agent Framework).
-# The hosted Foundry agents (intake / classifier / drafter) are created
+# The Foundry agents (intake / classifier / drafter) are created
 # in the portal in Lab 02 and resolved from this script by name.
 agent-framework>=1.0.0,<2.0
 azure-ai-projects>=2.1.0,<3.0
