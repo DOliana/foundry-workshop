@@ -58,7 +58,7 @@ In the Foundry portal:
 The Lab 02 orchestrator is deterministic Python. The same Functions
 can also be driven by an **LLM-driven agent** for contrast.
 
-1. **+ New agent** → `noclar-orchestrator` → `gpt-4.1-mini`.
+1. **+ New agent** → `noclar-orchestrator` → `gpt-5-mini`.
 2. Paste [`src/labs/prompts/orchestrator.md`](../../src/labs/prompts/orchestrator.md).
 3. **Tools → + Add → OpenAPI 3.0 specified tool** →
    [`src/functions/openapi-orchestrator.json`](../../src/functions/openapi-orchestrator.json)

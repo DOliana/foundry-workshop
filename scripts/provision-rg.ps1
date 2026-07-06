@@ -4,15 +4,16 @@
 # Usage (PowerShell):
 #   ./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-alice `
 #                              -Location swedencentral `
-#                              -EnvName foundry-alice `
+#                              [-EnvName foundry-workshop] `
 #                              [-Subscription <sub-id>] `
-#                              [-PrincipalId <object-id>]
+#                              [-PrincipalId <object-id>] `
+#                              [-DeployRealtimeModel]
 #
 # What it does:
 #   1. Ensures the RG exists (creates it if not).
 #   2. Initialises or reuses the azd environment $EnvName.
 #   3. Sets AZURE_LOCATION + AZURE_RESOURCE_GROUP in the azd env so azd
-#      deploys into the existing RG instead of creating a new one.
+#      deploys into the named RG instead of deriving rg-<env-name>.
 #   4. Runs `azd provision`.
 #
 # If `azd` does not deploy into the existing RG correctly, fall back to:
@@ -28,12 +29,13 @@ param(
     [string]$Location = 'swedencentral',
     [string]$EnvName,
     [string]$Subscription,
-    [string]$PrincipalId
+    [string]$PrincipalId,
+    [switch]$DeployRealtimeModel
 )
 
 $ErrorActionPreference = 'Stop'
 
-if (-not $EnvName) { $EnvName = $ResourceGroup }
+if (-not $EnvName) { $EnvName = 'foundry-workshop' }
 
 if ($Subscription) {
     Write-Host "Selecting subscription $Subscription"
@@ -68,6 +70,8 @@ if (-not $haveEnv) {
 
 azd env set AZURE_LOCATION $Location
 azd env set AZURE_RESOURCE_GROUP $ResourceGroup
+$deployRealtimeModelValue = if ($DeployRealtimeModel.IsPresent) { 'true' } else { 'false' }
+azd env set DEPLOY_REALTIME_MODEL $deployRealtimeModelValue
 
 if ($PrincipalId) {
     azd env set AZURE_PRINCIPAL_ID $PrincipalId

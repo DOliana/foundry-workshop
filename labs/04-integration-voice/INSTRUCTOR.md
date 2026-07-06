@@ -11,14 +11,21 @@ in the room.
 
 - **Confirm Voice Live SDK regional availability *and* realtime-model
   quota.** The demo uses an end-to-end speech-to-speech model
-  (`gpt-realtime-1.5` by default — provisioned by
-  `infra/modules/foundry.bicep`). Without it Voice Live falls back to
-  cascaded STT → LLM → TTS, which has ~1–3 s lag and no barge-in. If
-  Sweden Central does not currently carry this model, swap the
-  `realtimeModelName` param in `main.bicep` to whatever your region
-  does carry (`gpt-realtime`, `gpt-4o-mini-realtime-preview`,
-  `gpt-4o-realtime-preview`) or fall back
-  to West Europe for the Foundry account and cross-region for the
+  (`gpt-realtime-1.5` by default). The realtime deployment is
+  opt-in so participant environments do not fail on quota; enable it
+  only after confirming quota:
+
+  ```bash
+  azd env set DEPLOY_REALTIME_MODEL true
+  azd provision
+  ```
+
+  Without it Voice Live falls back to cascaded STT → LLM → TTS, which
+  has ~1–3 s lag and no barge-in. If Sweden Central does not currently
+  carry this model, swap the `realtimeModelName` param in `main.bicep`
+  to whatever your region does carry (`gpt-realtime`,
+  `gpt-4o-mini-realtime-preview`, `gpt-4o-realtime-preview`) or fall
+  back to West Europe for the Foundry account and cross-region for the
   rest. **No ACS / no phone number** — the demo is purely
   internet-based: laptop microphone → WebSocket → Foundry Voice
   Live endpoint → laptop speakers.
@@ -36,8 +43,8 @@ in the room.
 
 The workshop demo uses the GA `azure-ai-voicelive>=1.1.0` SDK and
 talks straight to the realtime *deployment* in your Foundry project
-(`gpt-realtime-1.5` by default — provisioned by
-`infra/modules/foundry.bicep`). It bypasses Foundry's voice-agent
+(`gpt-realtime-1.5` by default when `DEPLOY_REALTIME_MODEL=true`). It
+bypasses Foundry's voice-agent
 abstraction entirely, loading the same system prompt from
 [`src/labs/prompts/voice_intake.md`](../../src/labs/prompts/voice_intake.md)
 and passing it as `RequestSession.instructions`.
@@ -105,7 +112,7 @@ The vars the demo actually reads:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT` — Voice Live WS endpoint.
 - `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` — realtime model deployment
-  name (`gpt-realtime-1.5` by default; provisioned by Bicep).
+  name (`gpt-realtime-1.5` by default when `DEPLOY_REALTIME_MODEL=true`).
 - `AZURE_FUNCTION_APP_HOSTNAME`, `AZURE_FUNCTION_KEY` — for the
   governance `log_request` call at session start.
 

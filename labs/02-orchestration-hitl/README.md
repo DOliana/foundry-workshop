@@ -59,6 +59,11 @@ python -m py_compile src/functions/*.py src/labs/lab02/*.py
 azd deploy functions
 ```
 
+Run the `azd deploy functions` command from the cloned
+`foundry-workshop` root directory — the directory that contains
+[`azure.yaml`](../../azure.yaml). If your terminal is in this lab
+folder, run `cd ../..` first.
+
 > **What just happened.** `azd deploy functions` packaged the three
 > blueprints, pushed them to `func-<suffix>`, and the Functions
 > runtime registered the routes.
@@ -87,7 +92,7 @@ in `function_app.py` and re-run `azd deploy functions`.
 
 | Field | `noclar-legal-classifier` | `noclar-drafter` |
 |---|---|---|
-| Model | `gpt-4.1-mini` | `gpt-4.1-mini` |
+| Model | `gpt-5-mini` | `gpt-5-mini` |
 | Response format | **JSON object** | **JSON object** |
 | Instructions | paste [`legal_classifier.md`](../../src/labs/prompts/legal_classifier.md) | paste [`drafter.md`](../../src/labs/prompts/drafter.md) |
 | Tools | **none** — see callout below | **none** — see callout below |

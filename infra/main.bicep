@@ -19,14 +19,14 @@ param location string = resourceGroup().location
 @description('Principal ID of the deploying user (azd populates from `azd auth login`)')
 param principalId string = ''
 
-@description('TPM capacity (thousands) for the default gpt-4.1-mini deployment. Keep modest.')
+@description('TPM capacity (thousands) for the default chat model deployment. Keep modest.')
 param defaultModelCapacity int = 50
 
 @description('Default chat model name to deploy')
-param defaultModelName string = 'gpt-4.1-mini'
+param defaultModelName string = 'gpt-5-mini'
 
 @description('Default chat model version')
-param defaultModelVersion string = '2025-04-16'
+param defaultModelVersion string = '2025-08-07'
 
 @description('Embedding model name (used by Lab 03 hybrid retrieval)')
 param embeddingModelName string = 'text-embedding-3-small'
@@ -36,6 +36,9 @@ param embeddingModelVersion string = '1'
 
 @description('TPM capacity (thousands) for the embedding model deployment.')
 param embeddingModelCapacity int = 30
+
+@description('Deploy the realtime speech-to-speech model for the optional Lab 04 Voice Live demo. Leave false unless the subscription has realtime model quota.')
+param deployRealtimeModel bool = false
 
 @description('Realtime speech-to-speech model for the Lab 04 Voice Live demo')
 param realtimeModelName string = 'gpt-realtime-1.5'
@@ -94,6 +97,7 @@ module foundry 'modules/foundry.bicep' = {
     embeddingModelName: embeddingModelName
     embeddingModelVersion: embeddingModelVersion
     embeddingModelCapacity: embeddingModelCapacity
+    deployRealtimeModel: deployRealtimeModel
     realtimeModelName: realtimeModelName
     realtimeModelVersion: realtimeModelVersion
     realtimeModelCapacity: realtimeModelCapacity

@@ -15,10 +15,10 @@
       "value": "${DEFAULT_MODEL_CAPACITY=50}"
     },
     "defaultModelName": {
-      "value": "${DEFAULT_MODEL_NAME=gpt-4.1-mini}"
+      "value": "${DEFAULT_MODEL_NAME=gpt-5-mini}"
     },
     "defaultModelVersion": {
-      "value": "${DEFAULT_MODEL_VERSION=2025-04-14}"
+      "value": "${DEFAULT_MODEL_VERSION=2025-08-07}"
     },
     "embeddingModelName": {
       "value": "${EMBEDDING_MODEL_NAME=text-embedding-3-small}"
@@ -28,6 +28,9 @@
     },
     "embeddingModelCapacity": {
       "value": "${EMBEDDING_MODEL_CAPACITY=30}"
+    },
+    "deployRealtimeModel": {
+      "value": "${DEPLOY_REALTIME_MODEL=false}"
     }
   }
 }

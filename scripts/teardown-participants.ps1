@@ -4,7 +4,8 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Prefix = "foundry-p",
+    [string]$Prefix = "foundry-",
+    [int]$Count,
     [int]$Parallelism = 6,
     [switch]$Purge
 )
@@ -13,7 +14,15 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path "$PSScriptRoot/.."
 
 $envs = & azd env list --output json | ConvertFrom-Json
-$matching = $envs | Where-Object { $_.Name -like "$Prefix*" }
+if ($Count) {
+    $envNames = for ($participantNumber = 1; $participantNumber -le $Count; $participantNumber++) {
+        "{0}{1:00}" -f $Prefix, $participantNumber
+    }
+    $matching = $envs | Where-Object { $_.Name -in $envNames }
+} else {
+    $escapedPrefix = [regex]::Escape($Prefix)
+    $matching = $envs | Where-Object { $_.Name -match "^$escapedPrefix\d{2}$" }
+}
 
 Write-Host "Tearing down $($matching.Count) participant environment(s)" -ForegroundColor Cyan
 

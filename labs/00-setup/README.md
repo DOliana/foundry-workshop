@@ -14,7 +14,7 @@ Azure AI Foundry. To keep the moving parts visible, we **introduce one
 service per lab**, and each lab deploys *its own* code:
 
 | Lab | Service introduced | What you build with it |
-|---|---|---|
+| --- | --- | --- |
 | **00 (here)** | **Azure AI Foundry**, **Application Insights** | Provision empty shells, verify Foundry is reachable. |
 | 01 | (no new service) | Create your first agent in the portal. |
 | 02 | **Azure Functions**, **Storage queue** | Persist approved memos and notify a reviewer. |
@@ -34,11 +34,14 @@ code and creates the artefacts it needs.
 You need (or your instructor needs on your behalf):
 
 - **Owner** or **Contributor** on a pre-created Azure resource group
-  (`rg-foundry-<initials>`). The Bicep deploys at **resource-group
+  (`rg-foundry-01`, `rg-foundry-02`, etc.). The Bicep deploys at **resource-group
   scope** — you do **not** need subscription-level rights.
-- A `gpt-4.1-mini` model quota assigned to the chosen region
+- A `gpt-5-mini` model quota assigned to the chosen region
   (**Sweden Central** by default). The instructor confirms this
   before the workshop.
+- Optional, for the Lab 04 Voice Live demo: realtime model quota for
+  `gpt-realtime-1.5` in the same region. This is **not required** for
+  the hands-on labs and is not deployed unless explicitly enabled.
 - After provisioning: a handful of data-plane roles on the resources
   inside the RG (Cognitive Services User on Foundry, Storage Blob
   Data Contributor on the storage account, Search Index Data
@@ -59,6 +62,10 @@ You need (or your instructor needs on your behalf):
 > (activating a venv, exporting env vars, line continuations,
 > viewing files), the lab shows **both** a bash and a PowerShell
 > block side-by-side.
+
+Run every `azd` command from the cloned `foundry-workshop` root
+directory — the directory that contains [`azure.yaml`](../../azure.yaml).
+If your terminal is in this lab folder, run `cd ../..` first.
 
 PowerShell (Windows) **or** bash (Codespaces / Linux / macOS):
 
@@ -97,25 +104,39 @@ If you have more than one subscription:
 az account set --subscription "<YOUR-SUB-NAME-OR-ID>"
 ```
 
-## 3. Create the resource group (if your instructor hasn't already)
+## 3. Create the resource group
 
-Ask the instructor first — they may have created one for you.
+Ask the instructor first — they may have created one for you. If you are not using your own subscription you might be given a resourcegroup.
+
+If you are preparing the optional Voice Live demo, first check realtime
+model quota in the Azure AI Foundry portal: open the Foundry portal,
+go to **Management center → Quotas**, select the workshop region, and
+look for `gpt-realtime-1.5`. If quota is available, opt in when you
+provision. If quota is not available, leave the flag off; the rest of
+the workshop still works.
 
 PowerShell:
 
 ```powershell
-./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<initials> -Location swedencentral
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-01 -Location swedencentral
+# With confirmed realtime quota for the optional voice demo:
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-01 -Location swedencentral -DeployRealtimeModel
 ```
 
 bash:
 
 ```bash
-./scripts/provision-rg.sh -g rg-foundry-<initials> -l swedencentral
+./scripts/provision-rg.sh -g rg-foundry-01 -l swedencentral
+# With confirmed realtime quota for the optional voice demo:
+./scripts/provision-rg.sh -g rg-foundry-01 -l swedencentral --deploy-realtime-model
 ```
 
 The script creates the RG if it does not exist and runs
 `azd env new` + `azd env set AZURE_RESOURCE_GROUP=…` + `azd provision`
-into it. It is idempotent.
+into it. It also sets `DEPLOY_REALTIME_MODEL` to `true` only when you
+pass the realtime flag. By default the azd environment is named
+`foundry-workshop`; pass `-EnvName` / `--env-name` only if you need a
+separate local azd environment. It is idempotent.
 
 > **Why a resource group, not a subscription?** You typically don't
 > have subscription-owner permissions for a workshop. The Bicep in
@@ -131,8 +152,10 @@ azd env get-values > .env
 Spot-check that at least these keys exist:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
-- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-4.1-mini`)
+- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-5-mini`)
 - `AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT` (= `text-embedding-3-small`)
+- `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` (= `gpt-realtime-1.5`, only
+  if you enabled the optional realtime deployment)
 - `AZURE_AI_FOUNDRY_PORTAL_URL`
 - `APPLICATIONINSIGHTS_CONNECTION_STRING`
 - `AZURE_RESOURCE_GROUP`
@@ -149,7 +172,9 @@ Open the URL in your browser. Confirm:
 
 - The project `noclar-assessment` is selected (top-left).
 - Under **My assets → Models + endpoints** you see two deployments:
-  `gpt-4.1-mini` and `text-embedding-3-small`.
+  `gpt-5-mini` and `text-embedding-3-small`.
+  If you enabled the optional realtime deployment, you also see
+  `gpt-realtime-1.5`.
 - Under **Build → Agents** the list is **empty**.
 
 ## 6. (Optional) Peek at Application Insights
@@ -171,3 +196,46 @@ If `azd provision` fails (quota, permissions, network): tell the
 instructor your RG name. They will either re-run `provision-rg` with
 their own credentials or hand you an `.env` from a pre-provisioned
 parallel environment. Skip to step 5 and continue with Lab 01.
+
+If the failure mentions `DeploymentModelNotSupported`, the model name
+or version in the deployment does not match what the selected Azure
+region currently exposes. The instructor can verify available models
+with:
+
+```bash
+az cognitiveservices model list -l swedencentral --query "sort_by(sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')], &model.name), &model.format)[].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
+
+In that output, model identifiers live under `model.name` and
+`model.version`.
+
+For workshop substitutions, match capabilities as well as name and
+version:
+
+| Workshop use | Required catalog capabilities |
+| --- | --- |
+| Hosted Foundry agents and orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` |
+| Lab 03 vector embeddings | `embeddings=true` |
+| Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech |
+
+This command will show how much quota is available for each model:
+
+```bash
+az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(name.value, 'OpenAI.GlobalStandard.') || starts_with(name.value, 'AIServices.GlobalStandard.')], &name.value)[].{name:name.value,current:currentValue,limit:limit,unit:unit}" -o table
+```
+
+### potential fallback models
+
+- gpt-5.4-mini / 2026-03-17
+- gpt-5-nano / 2025-08-07
+- gpt-5 / 2025-08-07
+- gpt-5.4 / 2026-03-05
+
+Set the alternate model.
+
+```bash
+azd env set DEFAULT_MODEL_NAME gpt-5.4-mini
+azd env set DEFAULT_MODEL_VERSION 2026-03-17
+```
+
+Rerun the provision command after setting the variables.

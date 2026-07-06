@@ -1,9 +1,9 @@
-// Azure AI Foundry account + project + gpt-4.1-mini model deployment
+// Azure AI Foundry account + project + default chat model deployment
 // Used by: every block. This is the centerpiece of the workshop.
 //
 // Notes:
 //   * Uses the unified AIServices kind (Foundry generation, GA in 2025)
-//   * TPM cap on gpt-4.1-mini is intentionally conservative so participants have
+//   * TPM cap on the default chat model is intentionally conservative so participants have
 //     room to deploy additional models manually during Lab 1.
 
 @description('Resource name prefix / resourceToken')
@@ -16,10 +16,10 @@ param location string
 param tags object
 
 @description('Model name for the default deployment')
-param defaultModelName string = 'gpt-4.1-mini'
+param defaultModelName string = 'gpt-5-mini'
 
 @description('Model version for the default deployment')
-param defaultModelVersion string = '2025-04-16'
+param defaultModelVersion string = '2025-08-07'
 
 @description('TPM capacity for default model deployment (in thousands). Keep modest to leave room for manual deploys in Lab 1.')
 param defaultModelCapacity int = 20
@@ -32,6 +32,9 @@ param embeddingModelVersion string = '1'
 
 @description('TPM capacity for the embedding model deployment (in thousands).')
 param embeddingModelCapacity int = 30
+
+@description('Deploy the realtime speech-to-speech model for the optional Lab 04 Voice Live demo. Leave false unless the subscription has realtime model quota.')
+param deployRealtimeModel bool = false
 
 @description('Realtime speech-to-speech model used by Lab 04 Voice Live demo. Deployed in the same Foundry account; reached via the project endpoint over WSS. Swap if your region does not carry this model — `gpt-realtime` and `gpt-4o-realtime-preview` are the other common choices.')
 param realtimeModelName string = 'gpt-realtime-1.5'
@@ -123,10 +126,8 @@ resource embeddingModelDeployment 'Microsoft.CognitiveServices/accounts/deployme
   ]
 }
 
-// Realtime speech-to-speech model — used by the Lab 04 Voice Live demo. The
-// participant-facing flow is text; only the instructor's voice demo touches
-// this deployment. We size it for a single concurrent session.
-resource realtimeModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = {
+// Optional realtime speech-to-speech model for the Lab 04 Voice Live demo.
+resource realtimeModelDeployment 'Microsoft.CognitiveServices/accounts/deployments@2026-03-01' = if (deployRealtimeModel) {
   parent: foundry
   name: realtimeModelName
   sku: {
@@ -177,4 +178,4 @@ output projectEndpoint string = 'https://${foundry.name}.services.ai.azure.com/a
 output projectPrincipalId string = foundryProject.identity.principalId
 output defaultModelDeploymentName string = defaultModelDeployment.name
 output embeddingModelDeploymentName string = embeddingModelDeployment.name
-output realtimeModelDeploymentName string = realtimeModelDeployment.name
+output realtimeModelDeploymentName string = deployRealtimeModel ? realtimeModelDeployment.name : ''

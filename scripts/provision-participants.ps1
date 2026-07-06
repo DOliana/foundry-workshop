@@ -15,19 +15,20 @@
   Azure region (default swedencentral — where we have quota).
 
 .PARAMETER Prefix
-  Environment name prefix (default foundry-p).
+  Environment name prefix (default foundry-).
 
 .EXAMPLE
   ./provision-participants.ps1 -Count 18 -Location swedencentral
 
-  Provisions 18 RGs named rg-foundry-p01 ... rg-foundry-p18 in parallel
+  Provisions 18 RGs named rg-foundry-01 ... rg-foundry-18 in parallel
   and writes per-participant .env files under ./out/.
 #>
 [CmdletBinding()]
 param(
     [int]$Count = 18,
     [string]$Location = "swedencentral",
-    [string]$Prefix = "foundry-p",
+    [string]$Prefix = "foundry-",
+    [string]$ResourceGroupPrefix = "rg-foundry",
     [int]$Parallelism = 6
 )
 
@@ -38,26 +39,33 @@ New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
 Write-Host "Provisioning $Count participant environments in $Location..." -ForegroundColor Cyan
 
-$envNames = @()
+$participants = @()
 for ($i = 1; $i -le $Count; $i++) {
-    $envNames += ("{0}{1:00}" -f $Prefix, $i)
+  $suffix = "{0:00}" -f $i
+  $participants += [pscustomobject]@{
+    EnvName = "{0}{1}" -f $Prefix, $suffix
+    ResourceGroup = "{0}-{1}" -f $ResourceGroupPrefix, $suffix
+  }
 }
 
 # Run in parallel batches
-$envNames | ForEach-Object -ThrottleLimit $Parallelism -Parallel {
-    $envName = $_
+$participants | ForEach-Object -ThrottleLimit $Parallelism -Parallel {
+  $envName = $_.EnvName
+  $resourceGroup = $_.ResourceGroup
     $repoRoot = $using:repoRoot
     $outDir = $using:outDir
     $location = $using:Location
 
-    Write-Host "[$envName] starting..." -ForegroundColor Yellow
+  Write-Host "[$envName / $resourceGroup] starting..." -ForegroundColor Yellow
     Push-Location $repoRoot
     try {
         # Use azd directly so each env has its own state
         $env:AZURE_ENV_NAME = $envName
+    & az group create --name $resourceGroup --location $location --tags workshop=foundry-workshop 2>&1 | Out-Null
         & azd env new $envName --no-prompt 2>&1 | Out-Null
         & azd env select $envName 2>&1 | Out-Null
         & azd env set AZURE_LOCATION $location 2>&1 | Out-Null
+    & azd env set AZURE_RESOURCE_GROUP $resourceGroup 2>&1 | Out-Null
         & azd provision --no-prompt 2>&1 | Tee-Object -FilePath (Join-Path $outDir "$envName.log")
 
         # Capture outputs for the participant
