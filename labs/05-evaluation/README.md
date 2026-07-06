@@ -68,6 +68,20 @@ Walk the results:
 
 ## 3. Run the same eval from the SDK (10 min)
 
+The SDK run uses a separate judge model for scoring. Do **not** point
+the judge at the workshop `gpt-5-mini` deployment: the current
+`azure-ai-evaluation` package sends `max_tokens`, while `gpt-5*`
+deployments require `max_completion_tokens`. Use a `gpt-4.1` or
+`gpt-4.1-mini` deployment as the judge, matching the portal default.
+
+If your judge deployment is not named `gpt-4.1-mini`, set it before
+running the script:
+
+```bash
+azd env set AZURE_AI_FOUNDRY_EVAL_MODEL_DEPLOYMENT <your-gpt-4.1-judge-deployment>
+azd env get-values > .env
+```
+
 ```bash
 python -m src.labs.lab05.run_eval
 ```

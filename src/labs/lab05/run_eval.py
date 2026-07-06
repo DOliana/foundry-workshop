@@ -15,8 +15,12 @@
 # Required env vars:
 
 #     AZURE_AI_FOUNDRY_PROJECT_ENDPOINT
-#     AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT      e.g. gpt-5-mini
+#     AZURE_AI_FOUNDRY_EVAL_MODEL_DEPLOYMENT e.g. gpt-4.1-mini
 #     AZURE_FOUNDRY_API_VERSION              e.g. 2024-10-21
+
+# The eval judge deployment is intentionally separate from the agent's
+# `gpt-5-mini` deployment. `azure-ai-evaluation` currently sends `max_tokens`
+# to its judge model, which `gpt-5*` deployments reject.
 # """
 
 # from __future__ import annotations
@@ -37,16 +41,28 @@
 # DATASET = Path(__file__).resolve().parents[3] / "data" / "eval" / "grounding-citations.jsonl"
 # RESULTS_DIR = Path(__file__).resolve().parents[3] / "data" / "eval"
 # GROUNDED_AGENT = "noclar-grounded"
+# DEFAULT_EVAL_MODEL_DEPLOYMENT = "gpt-4.1-mini"
 
 
 # def _judge_config() -> dict:
+#     judge_deployment = os.environ.get(
+#         "AZURE_AI_FOUNDRY_EVAL_MODEL_DEPLOYMENT",
+#         DEFAULT_EVAL_MODEL_DEPLOYMENT,
+#     ).strip()
+#     if judge_deployment.lower().startswith("gpt-5"):
+#         raise RuntimeError(
+#             "AZURE_AI_FOUNDRY_EVAL_MODEL_DEPLOYMENT must point to a non-gpt-5 "
+#             "judge deployment such as 'gpt-4.1-mini'. The evaluation SDK sends "
+#             "the legacy 'max_tokens' parameter, which gpt-5 deployments reject; "
+#             "the judge model is independent of the noclar-grounded agent model."
+#         )
 #     return {
 #         "azure_endpoint": re.sub(
 #             r"/api/projects/[^/]+/?$",
 #             "",
 #             os.environ["AZURE_AI_FOUNDRY_PROJECT_ENDPOINT"],
 #         ).rstrip("/"),
-#         "azure_deployment": os.environ["AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT"],
+#         "azure_deployment": judge_deployment,
 #         "api_version": os.environ.get("AZURE_FOUNDRY_API_VERSION", "2024-10-21"),
 #     }
 
@@ -73,6 +89,7 @@
 #     print(f"{'='*70}\n")
 
 #     judge = _judge_config()
+#     print(f"Judge deployment: {judge['azure_deployment']}")
 #     groundedness = GroundednessEvaluator(model_config=judge)
 #     relevance = RelevanceEvaluator(model_config=judge)
 
