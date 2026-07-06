@@ -66,9 +66,9 @@ the RG, then provision into it:
 
 ```bash
 azd auth login
-./scripts/provision-rg.sh -g rg-foundry-<yourinitials> -l swedencentral
+./scripts/provision-rg.sh -g rg-foundry-01 -l swedencentral
 # or, on Windows:
-./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<yourinitials> -Location swedencentral
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-01 -Location swedencentral
 ```
 
 The script is intentional for the workshop flow. It creates or reuses the

@@ -34,7 +34,7 @@ code and creates the artefacts it needs.
 You need (or your instructor needs on your behalf):
 
 - **Owner** or **Contributor** on a pre-created Azure resource group
-  (`rg-foundry-<initials>`). The Bicep deploys at **resource-group
+  (`rg-foundry-01`, `rg-foundry-02`, etc.). The Bicep deploys at **resource-group
   scope** — you do **not** need subscription-level rights.
 - A `gpt-5-mini` model quota assigned to the chosen region
   (**Sweden Central** by default). The instructor confirms this
@@ -104,6 +104,40 @@ If you have more than one subscription:
 az account set --subscription "<YOUR-SUB-NAME-OR-ID>"
 ```
 
+## Instructor batch setup
+
+If you are preparing the room centrally, create one numbered resource
+group and one numbered user per participant from the repo root:
+
+```powershell
+./scripts/provision-participants.ps1 -Count 25 -Location swedencentral
+./scripts/create-participant-users.ps1 -Count 25
+```
+
+This provisions `rg-foundry-01` through `rg-foundry-25`, creates users
+`foundry-01` through `foundry-25` in the tenant's default workshop
+domain, grants each user **Owner** on their matching RG, and writes the
+initial passwords to `out/participant-users.csv`. If the tenant admin
+has created an MFA exclusion or grace-period group for the workshop,
+add its object id:
+
+```powershell
+./scripts/create-participant-users.ps1 `
+  -Count 25 `
+  -MfaExclusionGroupId 00000000-0000-0000-0000-000000000000
+```
+
+At the end of the workshop, remove the participant RGs and users:
+
+```powershell
+./scripts/teardown-participants.ps1 -Count 25 -Purge
+./scripts/remove-participant-users.ps1 -Count 25 -Confirm:$false
+```
+
+`remove-participant-users.ps1` supports `-WhatIf` if you want to preview
+which users will be deleted. These commands require permission to create
+and delete Entra users and assign Owner on the participant RGs.
+
 ## 3. Create the resource group
 
 Ask the instructor first — they may have created one for you. If you are not using your own subscription you might be given a resourcegroup.
@@ -118,17 +152,17 @@ the workshop still works.
 PowerShell:
 
 ```powershell
-./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<initials> -Location swedencentral
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-01 -Location swedencentral
 # With confirmed realtime quota for the optional voice demo:
-./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-<initials> -Location swedencentral -DeployRealtimeModel
+./scripts/provision-rg.ps1 -ResourceGroup rg-foundry-01 -Location swedencentral -DeployRealtimeModel
 ```
 
 bash:
 
 ```bash
-./scripts/provision-rg.sh -g rg-foundry-<initials> -l swedencentral
+./scripts/provision-rg.sh -g rg-foundry-01 -l swedencentral
 # With confirmed realtime quota for the optional voice demo:
-./scripts/provision-rg.sh -g rg-foundry-<initials> -l swedencentral --deploy-realtime-model
+./scripts/provision-rg.sh -g rg-foundry-01 -l swedencentral --deploy-realtime-model
 ```
 
 The script creates the RG if it does not exist and runs

@@ -85,14 +85,18 @@ az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(
    avoid the in-room RG-create step:
 
    ```powershell
-   foreach ($initials in @("ab","cd","ef")) {
-     ./scripts/provision-rg.ps1 -ResourceGroup "rg-foundry-$initials" -Location swedencentral
+   $participantCount = 25
+   foreach ($participantNumber in 1..$participantCount) {
+     $suffix = "{0:D2}" -f $participantNumber
+     ./scripts/provision-rg.ps1 -ResourceGroup "rg-foundry-$suffix" -Location swedencentral
    }
    ```
 
    ```bash
-   for initials in ab cd ef; do
-     ./scripts/provision-rg.sh -g "rg-foundry-$initials" -l swedencentral
+   participant_count=25
+   for participant_number in $(seq 1 "$participant_count"); do
+     suffix=$(printf "%02d" "$participant_number")
+     ./scripts/provision-rg.sh -g "rg-foundry-$suffix" -l swedencentral
    done
    ```
 
@@ -100,7 +104,37 @@ az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(
    `.env` next to each azd environment. ~10 min per RG; parallelise
    on the CLI if you have many.
 
-2. **Smoke-test one provisioned RG end-to-end** (you, not the participant): open the Foundry portal, confirm the chat and embedding model deployments, eyeball the empty Functions app, peek at Live Metrics. If you enabled `DEPLOY_REALTIME_MODEL`, confirm the realtime deployment too. If anything is off, fix it once now rather than 15 times in the room.
+2. **Create numbered participant users and grant RG Owner** if the
+   workshop tenant is dedicated enough for temporary lab users:
+
+   ```powershell
+   ./scripts/create-participant-users.ps1 `
+     -Count 25
+   ```
+
+   This uses the tenant's verified initial `.onmicrosoft.com` domain
+   by default, creates `foundry-01` through `foundry-25`, grants each
+   user **Owner** on their matching RG (`rg-foundry-01` through
+   `rg-foundry-25`), and writes initial passwords to
+   `out/participant-users.csv`. Pass `-UserDomain` only if you want
+   to force a specific verified domain.
+
+   MFA cannot be disabled by the user-create command. It is enforced
+   by tenant security defaults and Conditional Access. If the tenant
+   admin has prepared a temporary MFA exclusion or grace-period group,
+   pass the group's object id so the workshop users are added to it:
+
+   ```powershell
+   ./scripts/create-participant-users.ps1 `
+     -Count 25 `
+     -MfaExclusionGroupId 00000000-0000-0000-0000-000000000000
+   ```
+
+   If security defaults are enabled, there is no per-user exclusion;
+   use a dedicated workshop tenant or ask the tenant admin to configure
+   the appropriate Conditional Access policy before the room opens.
+
+3. **Smoke-test one provisioned RG end-to-end** (you, not the participant): open the Foundry portal, confirm the chat and embedding model deployments, eyeball the empty Functions app, peek at Live Metrics. If you enabled `DEPLOY_REALTIME_MODEL`, confirm the realtime deployment too. If anything is off, fix it once now rather than 15 times in the room.
 
 ## In the room — once per participant
 
@@ -108,22 +142,22 @@ If you are the one running `azd provision` (you own the RG), you can
 just self-assign the roles — no UPN needed:
 
 ```powershell
-./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-ab
+./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-01
 ```
 
 ```bash
-./scripts/postdeploy-rbac.sh --rg rg-foundry-ab
+./scripts/postdeploy-rbac.sh --rg rg-foundry-01
 ```
 
 When you provision on behalf of someone else, pass their UPN or AAD
 object id:
 
 ```powershell
-./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-ab -Principals user@contoso.com
+./scripts/postdeploy-rbac.ps1 -ResourceGroup rg-foundry-01 -Principals user@contoso.com
 ```
 
 ```bash
-./scripts/postdeploy-rbac.sh --rg rg-foundry-ab --principal user@contoso.com
+./scripts/postdeploy-rbac.sh --rg rg-foundry-01 --principal user@contoso.com
 ```
 
 The script assigns every RG-scoped data-plane role the participant
@@ -147,6 +181,13 @@ The script is idempotent — safe to re-run if you forgot a role.
 These have to be in place before the workshop starts, by someone with
 the relevant subscription rights:
 
+- **Participant user creation permissions** if you plan to use numbered
+  lab users instead of attendee-owned accounts. The account running
+  `scripts/create-participant-users.ps1` needs permission to create
+  Entra users and assign **Owner** on the participant resource groups.
+  MFA behavior must be handled in Entra security defaults or
+  Conditional Access; the script can only add users to a pre-created
+  exclusion/grace group.
 - **Model quota assignment** for `gpt-5-mini`,
   `text-embedding-3-small`, and `gpt-realtime-1.5` (or
   whichever realtime model your region carries) in the workshop
