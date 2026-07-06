@@ -110,7 +110,7 @@ managed identity `Search Index Data Contributor` on it, but it does
 type is still preview-only in bicep). You create it once, in the
 portal:
 
-1. **Management center → Connected resources → + New connection →
+1. **AI foundry → Build → Tools → Connect a Tool →
    Azure AI Search.**
 2. **Subscription / Resource group / Service:** pick the search
    service deployed in your RG (`srch-<token>`).
