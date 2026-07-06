@@ -196,3 +196,15 @@ If `azd provision` fails (quota, permissions, network): tell the
 instructor your RG name. They will either re-run `provision-rg` with
 their own credentials or hand you an `.env` from a pre-provisioned
 parallel environment. Skip to step 5 and continue with Lab 01.
+
+If the failure mentions `DeploymentModelNotSupported`, the model name
+or version in the deployment does not match what the selected Azure
+region currently exposes. The instructor can verify available models
+with:
+
+```bash
+az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
+
+In that output, model identifiers live under `model.name` and
+`model.version`.

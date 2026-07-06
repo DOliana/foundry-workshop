@@ -13,6 +13,29 @@ in the room. Participants only see [`README.md`](./README.md).
    in the same region. If quota is short, switch region in
    `infra/main.parameters.json` and re-run a dry provision.
 
+   To confirm which model names and versions are deployable in a
+   region, use the Azure CLI model list. The useful fields are nested
+   under `model`, so query `model.name` / `model.version` rather than
+   top-level `name` / `version`. This filters to AIServices/OpenAI
+   models with a `GlobalStandard` deployment SKU and excludes models
+   that are already deprecated or deprecating:
+
+   ```powershell
+   az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+   ```
+
+   ```bash
+   az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+   ```
+
+   For the default deployment, keep
+   [`infra/main.bicep`](../../infra/main.bicep),
+   [`infra/modules/foundry.bicep`](../../infra/modules/foundry.bicep),
+   and [`infra/main.parameters.json`](../../infra/main.parameters.json)
+   aligned with the returned `model.name` and `model.version`. For
+   Sweden Central, the current workshop default is `gpt-5.4-mini`
+   version `2026-03-17`.
+
     The Lab 04 realtime voice model is optional and not deployed by
     default. Only enable it for instructor/demo environments after
     confirming realtime-model quota:
@@ -91,6 +114,9 @@ the relevant subscription rights:
   `text-embedding-3-small`, and `gpt-realtime-1.5` (or
   whichever realtime model your region carries) in the workshop
   region.
+  If `azd provision` fails with `DeploymentModelNotSupported`, check
+  the region's available model list and make sure the Bicep uses both
+  the supported model name and version.
 - **Resource providers** registered:
   `Microsoft.CognitiveServices`, `Microsoft.Search`,
   `Microsoft.Insights`, `Microsoft.OperationalInsights`,

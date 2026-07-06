@@ -18,6 +18,9 @@ param tags object
 @description('Model name for the default deployment')
 param defaultModelName string = 'gpt-5.4-mini'
 
+@description('Model version for the default deployment')
+param defaultModelVersion string = '2026-03-17'
+
 @description('TPM capacity for default model deployment (in thousands). Keep modest to leave room for manual deploys in Lab 1.')
 param defaultModelCapacity int = 20
 
@@ -95,6 +98,7 @@ resource defaultModelDeployment 'Microsoft.CognitiveServices/accounts/deployment
     model: {
       format: 'OpenAI'
       name: defaultModelName
+      version: defaultModelVersion
     }
     raiPolicyName: 'Microsoft.DefaultV2'
   }
