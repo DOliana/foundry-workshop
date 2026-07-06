@@ -203,7 +203,7 @@ region currently exposes. The instructor can verify available models
 with:
 
 ```bash
-az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+az cognitiveservices model list -l swedencentral --query "sort_by(sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')], &model.name), &model.format)[].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
 ```
 
 In that output, model identifiers live under `model.name` and

@@ -8,43 +8,43 @@ in the room. Participants only see [`README.md`](./README.md).
 ## Days before the workshop
 
 1. **Confirm `gpt-5.4-mini` quota** in the workshop region
-   (Sweden Central by default). Foundry → your account → Quotas.
-   The lab also needs an embeddings model — **`text-embedding-3-small`**
-   in the same region. If quota is short, switch region in
-   `infra/main.parameters.json` and re-run a dry provision.
+  (Sweden Central by default). Foundry → your account → Quotas.
+  The lab also needs an embeddings model — **`text-embedding-3-small`**
+  in the same region. If quota is short, switch region in
+  `infra/main.parameters.json` and re-run a dry provision.
 
-   To confirm which model names and versions are deployable in a
-   region, use the Azure CLI model list. The useful fields are nested
-   under `model`, so query `model.name` / `model.version` rather than
-   top-level `name` / `version`. This filters to AIServices/OpenAI
-   models with a `GlobalStandard` deployment SKU and excludes models
-   that are already deprecated or deprecating:
+  The Lab 04 realtime voice model is optional and not deployed by
+  default. Only enable it for instructor/demo environments after
+  confirming realtime-model quota:
 
-   ```powershell
-   az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
-   ```
+  ```bash
+  azd env set DEPLOY_REALTIME_MODEL true
+  ```
 
-   ```bash
-   az cognitiveservices model list -l swedencentral --query "[?(kind=='AIServices' || kind=='OpenAI') && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
-   ```
+### Find deployable model names and versions
 
-   For the default deployment, keep
-   [`infra/main.bicep`](../../infra/main.bicep),
-   [`infra/modules/foundry.bicep`](../../infra/modules/foundry.bicep),
-   and [`infra/main.parameters.json`](../../infra/main.parameters.json)
-   aligned with the returned `model.name` and `model.version`. For
-   Sweden Central, the current workshop default is `gpt-5.4-mini`
-   version `2026-03-17`.
+Use the Azure CLI model list to confirm which model names and versions
+are deployable in a region. The useful fields are nested under `model`,
+so query `model.name` / `model.version` rather than top-level `name` /
+`version`. This filters to AIServices models with a `GlobalStandard`
+deployment SKU and excludes models that are already deprecated or
+deprecating:
 
-    The Lab 04 realtime voice model is optional and not deployed by
-    default. Only enable it for instructor/demo environments after
-    confirming realtime-model quota:
+```powershell
+az cognitiveservices model list -l swedencentral --query "sort_by(sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')], &model.name), &model.format)[].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
 
-    ```bash
-    azd env set DEPLOY_REALTIME_MODEL true
-    ```
+```bash
+az cognitiveservices model list -l swedencentral --query "sort_by(sort_by([?kind=='AIServices' && model.lifecycleStatus!='Deprecating' && model.lifecycleStatus!='Deprecated' && contains(model.skus[].name, 'GlobalStandard')], &model.name), &model.format)[].{kind:kind,name:model.name,version:model.version,format:model.format,lifecycle:model.lifecycleStatus,skus:model.skus[].name}" -o table
+```
 
-2. **Pre-create one resource group per participant** if you want to
+For the default deployment, keep [`infra/main.bicep`](../../infra/main.bicep),
+[`infra/modules/foundry.bicep`](../../infra/modules/foundry.bicep), and
+[`infra/main.parameters.json`](../../infra/main.parameters.json) aligned with
+the returned `model.name` and `model.version`. For Sweden Central, the current
+workshop default is `gpt-5.4-mini` version `2026-03-17`.
+
+1. **Pre-create one resource group per participant** if you want to
    avoid the in-room RG-create step:
 
    ```powershell
@@ -63,7 +63,7 @@ in the room. Participants only see [`README.md`](./README.md).
    `.env` next to each azd environment. ~10 min per RG; parallelise
    on the CLI if you have many.
 
-3. **Smoke-test one provisioned RG end-to-end** (you, not the participant): open the Foundry portal, confirm the chat and embedding model deployments, eyeball the empty Functions app, peek at Live Metrics. If you enabled `DEPLOY_REALTIME_MODEL`, confirm the realtime deployment too. If anything is off, fix it once now rather than 15 times in the room.
+2. **Smoke-test one provisioned RG end-to-end** (you, not the participant): open the Foundry portal, confirm the chat and embedding model deployments, eyeball the empty Functions app, peek at Live Metrics. If you enabled `DEPLOY_REALTIME_MODEL`, confirm the realtime deployment too. If anything is off, fix it once now rather than 15 times in the room.
 
 ## In the room — once per participant
 
