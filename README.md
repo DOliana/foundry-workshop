@@ -57,6 +57,10 @@ See [`labs/00-setup/README.md`](labs/00-setup/README.md) for the lab-by-lab walk
 
 ## Deploy the infrastructure
 
+Run every `azd` command from the cloned `foundry-workshop` root directory —
+the directory that contains [`azure.yaml`](azure.yaml). If your terminal is in a
+lab folder such as `labs/00-setup`, run `cd ../..` first.
+
 The Bicep targets a **resource group** (not a subscription). Pre-create
 the RG, then provision into it:
 
@@ -121,6 +125,8 @@ Total provisioning time: ~10 minutes.
 ---
 
 ## Clean up
+
+Run cleanup from the `foundry-workshop` root directory as well:
 
 ```bash
 azd down --purge

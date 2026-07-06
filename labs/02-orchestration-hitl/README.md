@@ -59,6 +59,11 @@ python -m py_compile src/functions/*.py src/labs/lab02/*.py
 azd deploy functions
 ```
 
+Run the `azd deploy functions` command from the cloned
+`foundry-workshop` root directory — the directory that contains
+[`azure.yaml`](../../azure.yaml). If your terminal is in this lab
+folder, run `cd ../..` first.
+
 > **What just happened.** `azd deploy functions` packaged the three
 > blueprints, pushed them to `func-<suffix>`, and the Functions
 > runtime registered the routes.

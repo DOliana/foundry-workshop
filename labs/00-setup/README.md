@@ -63,6 +63,10 @@ You need (or your instructor needs on your behalf):
 > viewing files), the lab shows **both** a bash and a PowerShell
 > block side-by-side.
 
+Run every `azd` command from the cloned `foundry-workshop` root
+directory — the directory that contains [`azure.yaml`](../../azure.yaml).
+If your terminal is in this lab folder, run `cd ../..` first.
+
 PowerShell (Windows) **or** bash (Codespaces / Linux / macOS):
 
 ```bash
@@ -100,9 +104,9 @@ If you have more than one subscription:
 az account set --subscription "<YOUR-SUB-NAME-OR-ID>"
 ```
 
-## 3. Create the resource group (if your instructor hasn't already)
+## 3. Create the resource group
 
-Ask the instructor first — they may have created one for you.
+Ask the instructor first — they may have created one for you. If you are not using your own subscription you might be given a resourcegroup.
 
 If you are preparing the optional Voice Live demo, first check realtime
 model quota in the Azure AI Foundry portal: open the Foundry portal,
