@@ -7,7 +7,7 @@ in the room. Participants only see [`README.md`](./README.md).
 
 ## Days before the workshop
 
-1. **Confirm `gpt-5.4-mini` quota** in the workshop region
+1. **Confirm `gpt-5-mini` quota** in the workshop region
   (Sweden Central by default). Foundry → your account → Quotas.
   The lab also needs an embeddings model — **`text-embedding-3-small`**
   in the same region. If quota is short, switch region in
@@ -42,7 +42,7 @@ For the default deployment, keep [`infra/main.bicep`](../../infra/main.bicep),
 [`infra/modules/foundry.bicep`](../../infra/modules/foundry.bicep), and
 [`infra/main.parameters.json`](../../infra/main.parameters.json) aligned with
 the returned `model.name` and `model.version`. For Sweden Central, the current
-workshop default is `gpt-5.4-mini` version `2026-03-17`.
+workshop default is `gpt-5-mini` version `2025-08-07`.
 
 ### Required model capabilities
 
@@ -51,7 +51,7 @@ by name alone:
 
 | Workshop use | Required catalog capabilities | Current default |
 | --- | --- | --- |
-| Hosted Foundry agents, JSON responses, orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` | `gpt-5.4-mini` `2026-03-17` |
+| Hosted Foundry agents, JSON responses, orchestration | `agentsV2=true`, `chatCompletion=true`, `responses=true` | `gpt-5-mini` `2025-08-07` |
 | Lab 03 vector embeddings | `embeddings=true` | `text-embedding-3-small` `1` |
 | Optional Lab 04 Voice Live | `realtime=true`; prefer `gpt-realtime*` names for speech-to-speech | `gpt-realtime-1.5` `2026-02-23` |
 
@@ -147,7 +147,7 @@ The script is idempotent — safe to re-run if you forgot a role.
 These have to be in place before the workshop starts, by someone with
 the relevant subscription rights:
 
-- **Model quota assignment** for `gpt-5.4-mini`,
+- **Model quota assignment** for `gpt-5-mini`,
   `text-embedding-3-small`, and `gpt-realtime-1.5` (or
   whichever realtime model your region carries) in the workshop
   region.

@@ -15,10 +15,10 @@
       "value": "${DEFAULT_MODEL_CAPACITY=50}"
     },
     "defaultModelName": {
-      "value": "${DEFAULT_MODEL_NAME=gpt-5.4-mini}"
+      "value": "${DEFAULT_MODEL_NAME=gpt-5-mini}"
     },
     "defaultModelVersion": {
-      "value": "${DEFAULT_MODEL_VERSION=2026-03-17}"
+      "value": "${DEFAULT_MODEL_VERSION=2025-08-07}"
     },
     "embeddingModelName": {
       "value": "${EMBEDDING_MODEL_NAME=text-embedding-3-small}"

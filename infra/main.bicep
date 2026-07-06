@@ -19,14 +19,14 @@ param location string = resourceGroup().location
 @description('Principal ID of the deploying user (azd populates from `azd auth login`)')
 param principalId string = ''
 
-@description('TPM capacity (thousands) for the default gpt-5.4-mini deployment. Keep modest.')
+@description('TPM capacity (thousands) for the default chat model deployment. Keep modest.')
 param defaultModelCapacity int = 50
 
 @description('Default chat model name to deploy')
-param defaultModelName string = 'gpt-5.4-mini'
+param defaultModelName string = 'gpt-5-mini'
 
 @description('Default chat model version')
-param defaultModelVersion string = '2026-03-17'
+param defaultModelVersion string = '2025-08-07'
 
 @description('Embedding model name (used by Lab 03 hybrid retrieval)')
 param embeddingModelName string = 'text-embedding-3-small'

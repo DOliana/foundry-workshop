@@ -130,7 +130,7 @@ You only do this once per Foundry project, not once per agent.
 **Build → Agents → + New agent**:
 
 - **Name:** `noclar-grounded`
-- **Model:** `gpt-5.4-mini`
+- **Model:** `gpt-5-mini`
 - **Instructions:** paste
   [`src/labs/prompts/grounded.md`](../../src/labs/prompts/grounded.md).
   Note the explicit rules to (i) extract filter hints from the

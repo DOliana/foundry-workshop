@@ -36,7 +36,7 @@ You need (or your instructor needs on your behalf):
 - **Owner** or **Contributor** on a pre-created Azure resource group
   (`rg-foundry-<initials>`). The Bicep deploys at **resource-group
   scope** — you do **not** need subscription-level rights.
-- A `gpt-5.4-mini` model quota assigned to the chosen region
+- A `gpt-5-mini` model quota assigned to the chosen region
   (**Sweden Central** by default). The instructor confirms this
   before the workshop.
 - Optional, for the Lab 04 Voice Live demo: realtime model quota for
@@ -152,7 +152,7 @@ azd env get-values > .env
 Spot-check that at least these keys exist:
 
 - `AZURE_AI_FOUNDRY_PROJECT_ENDPOINT`
-- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-5.4-mini`)
+- `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` (= `gpt-5-mini`)
 - `AZURE_AI_FOUNDRY_EMBEDDING_DEPLOYMENT` (= `text-embedding-3-small`)
 - `AZURE_AI_FOUNDRY_REALTIME_DEPLOYMENT` (= `gpt-realtime-1.5`, only
   if you enabled the optional realtime deployment)
@@ -172,7 +172,7 @@ Open the URL in your browser. Confirm:
 
 - The project `noclar-assessment` is selected (top-left).
 - Under **My assets → Models + endpoints** you see two deployments:
-  `gpt-5.4-mini` and `text-embedding-3-small`.
+  `gpt-5-mini` and `text-embedding-3-small`.
   If you enabled the optional realtime deployment, you also see
   `gpt-realtime-1.5`.
 - Under **Build → Agents** the list is **empty**.
@@ -227,16 +227,15 @@ az cognitiveservices usage list -l swedencentral --query "sort_by([?starts_with(
 ### potential fallback models
 
 - gpt-5.4-mini / 2026-03-17
-- gpt-5-mini / 2025-08-07
 - gpt-5-nano / 2025-08-07
 - gpt-5 / 2025-08-07
 - gpt-5.4 / 2026-03-05
 
-Set the  alternave model.
+Set the alternate model.
 
 ```bash
-azd env set DEFAULT_MODEL_NAME gpt-5-mini
-azd env set DEFAULT_MODEL_VERSION 2025-08-07
+azd env set DEFAULT_MODEL_NAME gpt-5.4-mini
+azd env set DEFAULT_MODEL_VERSION 2026-03-17
 ```
 
-Rerun the provision command after setting the variabls.
+Rerun the provision command after setting the variables.
