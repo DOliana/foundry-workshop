@@ -16,6 +16,7 @@
 # Roles granted (each scoped to its resource in the RG):
 #   * Cognitive Services User              on the Foundry account
 #   * Cognitive Services OpenAI User       on the Foundry account
+#   * Azure AI User                        on the Foundry account (Voice Live)
 #   * Search Index Data Contributor        on AI Search
 #   * Search Service Contributor           on AI Search
 #   * Storage Blob Data Contributor        on Storage
@@ -100,6 +101,7 @@ for p in "${PRINCIPALS[@]}"; do
 
   grant "$oid" 'Cognitive Services User'           "$FOUNDRY"
   grant "$oid" 'Cognitive Services OpenAI User'    "$FOUNDRY"
+  grant "$oid" 'Azure AI User'                     "$FOUNDRY"
   grant "$oid" 'Search Index Data Contributor'     "$SEARCH"
   grant "$oid" 'Search Service Contributor'        "$SEARCH"
   grant "$oid" 'Storage Blob Data Contributor'     "$STORAGE"

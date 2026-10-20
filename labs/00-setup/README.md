@@ -31,25 +31,33 @@ code and creates the artefacts it needs.
 
 ## 0. Permissions you need
 
-You need (or your instructor needs on your behalf):
+Choose one access path with your instructor before Lab 00:
 
-- **Owner** or **Contributor** on a pre-created Azure resource group
-  (`rg-foundry-01`, `rg-foundry-02`, etc.). The Bicep deploys at **resource-group
-  scope** — you do **not** need subscription-level rights.
-- A `gpt-5-mini` model quota assigned to the chosen region
-  (**Sweden Central** by default). The instructor confirms this
-  before the workshop.
-- Optional, for the Lab 04 Voice Live demo: realtime model quota for
-  `gpt-realtime-1.5` in the same region. This is **not required** for
-  the hands-on labs and is not deployed unless explicitly enabled.
-- After provisioning: a handful of data-plane roles on the resources
-  inside the RG (Cognitive Services User on Foundry, Storage Blob
-  Data Contributor on the storage account, Search Index Data
-  Contributor on AI Search, Monitoring Metrics Publisher on App
-  Insights). The instructor grants these for you via
-  [`scripts/postdeploy-rbac.ps1`](../../scripts/postdeploy-rbac.ps1) /
-  [`.sh`](../../scripts/postdeploy-rbac.sh) — see
-  [`INSTRUCTOR.md`](./INSTRUCTOR.md).
+| Path | Access required |
+| --- | --- |
+| **You run `azd provision`** | **Owner** on your assigned RG, or **Contributor plus Role Based Access Control Administrator / User Access Administrator** on that RG. The Bicep creates resource-scoped role assignments for Functions, Foundry and Search managed identities; Contributor alone cannot create these. No subscription-wide Owner role is required if the RG already exists. To let the script *create* an absent RG, you additionally need subscription-scope permission to create resource groups; otherwise have an admin pre-create it. |
+| **Instructor provisions for you** | The instructor creates the RG and deploys the resources listed in the [root README](../../README.md#deploy-the-infrastructure). To follow Labs 02 and 04 yourself (`azd deploy functions` and listing Functions keys), get **Contributor on that RG**. For Foundry agents/model calls and Lab 03 Search/Storage, have the instructor grant the resource roles below; RG Contributor alone does not confer data-plane access. The instructor gives you a local `azd` environment configured for your RG and its outputs; a standalone `.env` file neither grants access nor configures `azd`. |
+
+In either path, the participant needs these resource-scoped roles:
+**Cognitive Services User** and
+**Cognitive Services OpenAI User** on the Foundry account; **Search Service
+Contributor** and **Search Index Data Contributor** on AI Search; **Storage
+Blob Data Contributor** and **Storage Queue Data Contributor** on Storage;
+and **Monitoring Metrics Publisher** on Application Insights. The optional
+instructor Voice Live demo also needs **Azure AI User** on the Foundry
+account for the identity running it. The instructor applies these with
+[`postdeploy-rbac.ps1`](../../scripts/postdeploy-rbac.ps1) or
+[`postdeploy-rbac.sh`](../../scripts/postdeploy-rbac.sh) after provisioning;
+allow a few minutes for RBAC to propagate. The Bicep also assigns its
+service managed identities their required roles.
+
+The subscription must have the required resource providers registered (see
+the [instructor prerequisites](../../INSTRUCTOR.md#pre-workshop-admin-prerequisites)),
+and **Global Standard model quota in the chosen region** (Sweden Central
+by default): `gpt-5-mini` **50k TPM** and `text-embedding-3-small`
+**30k TPM per environment**. Multiply by the number of simultaneous RGs;
+the instructor confirms capacity in advance. `gpt-realtime-1.5`
+**10k TPM** is needed only if enabling the optional instructor voice demo.
 
 ---
 
@@ -106,7 +114,11 @@ az account set --subscription "<YOUR-SUB-NAME-OR-ID>"
 
 ## 3. Create the resource group
 
-Ask the instructor first — they may have created one for you. If you are not using your own subscription you might be given a resourcegroup.
+Ask the instructor first: your RG may already exist, or its resources may
+already be deployed. If you lack subscription-scope RG creation rights, the
+instructor must create the RG before you run the script. If they have also
+provisioned the resources, use the matching `azd` environment they set up
+for you and skip to step 5 instead of running `azd provision` yourself.
 
 If you are preparing the optional Voice Live demo, first check realtime
 model quota in the Azure AI Foundry portal: open the Foundry portal,
@@ -141,7 +153,8 @@ separate local azd environment. It is idempotent.
 > **Why a resource group, not a subscription?** You typically don't
 > have subscription-owner permissions for a workshop. The Bicep in
 > [`infra/main.bicep`](../../infra/main.bicep) targets
-> `resourceGroup` scope so an RG-Contributor can deploy it.
+> `resourceGroup` scope; its role assignments still require Owner or
+> Contributor plus an RG-scoped role with role-assignment rights.
 
 ## 4. Capture outputs
 
@@ -193,9 +206,11 @@ here in Lab 02 to watch the orchestration trace happen live.
 ## Fallback
 
 If `azd provision` fails (quota, permissions, network): tell the
-instructor your RG name. They will either re-run `provision-rg` with
-their own credentials or hand you an `.env` from a pre-provisioned
-parallel environment. Skip to step 5 and continue with Lab 01.
+instructor your RG name. They can re-run `provision-rg` with
+their own credentials or provide a configured `azd` environment and
+`.env` from your pre-provisioned RG **and the required RBAC
+assignments**. Skip to step 5
+only once your account can open the project and run its model.
 
 If the failure mentions `DeploymentModelNotSupported`, the model name
 or version in the deployment does not match what the selected Azure
