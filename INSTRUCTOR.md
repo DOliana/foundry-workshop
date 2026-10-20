@@ -160,38 +160,53 @@ object id:
 ./scripts/postdeploy-rbac.sh --rg rg-foundry-01 --principal user@contoso.com
 ```
 
-The script assigns every RG-scoped data-plane role the participant
+The script assigns every resource-scoped role the participant
 needs:
 
 - **Cognitive Services User** on the Foundry account (run agents,
   call models)
+- **Cognitive Services OpenAI User** on the Foundry account (model calls)
+- **Azure AI User** on the Foundry account (optional Voice Live demo)
 - **Storage Blob Data Contributor** on the storage account (read /
   write blobs from Functions and Python)
 - **Storage Queue Data Contributor** on the storage account
   (enqueue / dequeue reviewer messages)
 - **Search Index Data Contributor** on the AI Search service (Lab 03
   ingest)
+- **Search Service Contributor** on AI Search (create/manage the index)
 - **Monitoring Metrics Publisher** on App Insights (custom metrics
   from the orchestrator)
 
-The script is idempotent — safe to re-run if you forgot a role.
+Participants deploying Functions and listing its keys in Labs 02 and 04
+also need **Contributor** on their RG (the user-creation script grants
+RG Owner instead). Granting these resource roles requires Owner, Role
+Based Access Control Administrator, or User Access Administrator on
+the relevant scope; RG Contributor alone cannot run this script or
+deploy the Bicep's managed-identity role assignments. The script is
+idempotent — safe to re-run if you forgot a role.
 
-## Subscription-level prerequisites (cannot be done by an RG-Contributor)
+## Pre-workshop admin prerequisites
 
 These have to be in place before the workshop starts, by someone with
-the relevant subscription rights:
+the relevant subscription or tenant rights:
 
+- **Resource groups**: pre-create one per participant and assign
+  RG Owner (or Contributor plus an RG-scoped role with role-assignment
+  rights) if participants will provision themselves. Creating the RG
+  requires subscription-scope RG creation permissions; deploying into
+  an existing RG does not.
 - **Participant user creation permissions** if you plan to use numbered
   lab users instead of attendee-owned accounts. The account running
-  `scripts/create-participant-users.ps1` needs permission to create
-  Entra users and assign **Owner** on the participant resource groups.
+  `scripts/create-participant-users.ps1` needs an Entra role that can
+  create users (for example **User Administrator**) and Azure role
+  assignment rights on the participant resource groups to grant **Owner**.
   MFA behavior must be handled in Entra security defaults or
   Conditional Access; the script can only add users to a pre-created
   exclusion/grace group.
-- **Model quota assignment** for `gpt-5-mini`,
-  `text-embedding-3-small`, and `gpt-realtime-1.5` (or
-  whichever realtime model your region carries) in the workshop
-  region.
+- **Global Standard model quota** in the workshop region: 50k TPM for
+  `gpt-5-mini` and 30k TPM for `text-embedding-3-small` per
+  concurrently deployed RG. Add 10k TPM for `gpt-realtime-1.5`
+  per optional voice-demo environment (not required for attendees).
   If `azd provision` fails with `DeploymentModelNotSupported`, check
   the region's available model list and make sure the Bicep uses both
   the supported model name and version.

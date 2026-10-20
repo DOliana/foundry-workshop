@@ -42,14 +42,26 @@ foundry-workshop/
 
 ## Prerequisites
 
-- **Azure subscription** with permission to create resources
+- **Azure access:** Sign in to a subscription and an assigned, pre-created
+  resource group. To provision the workshop yourself, you need **Owner** on
+  that RG, or **Contributor plus Role Based Access Control Administrator /
+  User Access Administrator** on that RG: the Bicep creates role assignments
+  for service managed identities. RG Contributor alone cannot deploy it.
+  Creating the RG yourself also requires permission to create resource
+  groups at subscription scope. If an instructor provisions it, participants
+  do not need subscription-wide permissions; see
+  [Lab 00's access paths](labs/00-setup/README.md#0-permissions-you-need).
 - **Tools:**
   - [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) `>= 2.60`
   - [Azure Developer CLI (azd)](https://aka.ms/install-azd) `>= 1.10`
   - [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) v4
   - Python 3.11+
   - Git
-- **Quota:** the deployment uses **Sweden Central** and requests a *modest* TPM allocation for `gpt-5-mini`. If your subscription has no quota there, see [`labs/00-setup/README.md`](labs/00-setup/README.md) for fallback options.
+- **Quota:** the deployment uses **Sweden Central** and needs Global Standard
+  quota for both `gpt-5-mini` (50k TPM) and `text-embedding-3-small`
+  (30k TPM) per environment. The optional instructor Voice Live demo
+  also needs `gpt-realtime-1.5` (10k TPM). For alternatives, see
+  [`labs/00-setup/README.md`](labs/00-setup/README.md).
 
 See [`labs/00-setup/README.md`](labs/00-setup/README.md) for the lab-by-lab walkthrough.
 
@@ -61,8 +73,9 @@ Run every `azd` command from the cloned `foundry-workshop` root directory —
 the directory that contains [`azure.yaml`](azure.yaml). If your terminal is in a
 lab folder such as `labs/00-setup`, run `cd ../..` first.
 
-The Bicep targets a **resource group** (not a subscription). Pre-create
-the RG, then provision into it:
+The Bicep targets a **resource group** (not a subscription). Have an
+administrator create the RG and grant the access above, or create it yourself
+if you have subscription-level RG creation rights. Then provision into it:
 
 ```bash
 azd auth login
@@ -103,9 +116,11 @@ This provisions, in **Sweden Central**:
 | Azure AI Search (Basic) | Hybrid (vector + keyword + filter) knowledge base |
 | Storage Account | Sample docs, assessment outputs, function state |
 | Azure Functions (Flex, Python 3.11) | Persistence + governance logging + reviewer routing |
-| Azure Communication Services | Voice Live SDK demo |
 | Log Analytics + Application Insights | Tracing & telemetry from request #1 |
 | Managed Identity + RBAC | Functions ↔ Foundry/Search/Storage pre-wired |
+
+The optional Voice Live demo uses a realtime deployment in the Foundry
+account; it does **not** require Azure Communication Services.
 
 Total provisioning time: ~10 minutes.
 
@@ -113,14 +128,14 @@ Total provisioning time: ~10 minutes.
 
 ## Workshop agenda
 
-| Time | Block | Lab |
-| --- | --- | --- |
-| 09:00–09:20 | Welcome & setup | [`labs/00-setup`](labs/00-setup) |
-| 09:20–10:45 | Block 1 — Your First Agent with Built-In Observability | [`labs/01-first-agent`](labs/01-first-agent) |
-| 11:00–12:15 | Block 2 — Multi-Agent Orchestration & HITL | [`labs/02-orchestration-hitl`](labs/02-orchestration-hitl) |
-| 13:15–14:30 | Block 3 — Document Understanding & Knowledge Grounding | [`labs/03-knowledge-grounding`](labs/03-knowledge-grounding) |
-| 14:45–16:00 | Block 4 — Voice Interaction & Custom Integration | [`labs/04-integration-voice`](labs/04-integration-voice) |
-| 16:00–16:45 | Block 5 — Evaluation, Governance & Production Readiness | [`labs/05-evaluation`](labs/05-evaluation) |
+| Time | Block | Lab | What you'll do |
+| --- | --- | --- | --- |
+| 09:00–09:20 | Welcome & setup | [`labs/00-setup`](labs/00-setup) | Provision the workshop resources and verify that your Foundry project opens. |
+| 09:20–10:45 | Block 1 — Your First Agent with Built-In Observability | [`labs/01-first-agent`](labs/01-first-agent) | Create an intake agent in Foundry, try it in the Playground, and inspect its traces. |
+| 11:00–12:15 | Block 2 — Multi-Agent Orchestration & HITL | [`labs/02-orchestration-hitl`](labs/02-orchestration-hitl) | Coordinate specialist agents with human approval gates and persist the result through Azure Functions. |
+| 13:15–14:30 | Block 3 — Document Understanding & Knowledge Grounding | [`labs/03-knowledge-grounding`](labs/03-knowledge-grounding) | Index sample documents in AI Search and ground agent answers with citations. |
+| 14:45–16:00 | Block 4 — Voice Interaction & Custom Integration | [`labs/04-integration-voice`](labs/04-integration-voice) | Attach Functions and MCP tools to an agent, then watch an instructor-led voice demo. |
+| 16:00–16:45 | Block 5 — Evaluation, Governance & Production Readiness | [`labs/05-evaluation`](labs/05-evaluation) | Evaluate the grounded agent in the portal and SDK, then review traces and production considerations. |
 
 ---
 
